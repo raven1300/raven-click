@@ -26,6 +26,7 @@ pnpm-debug.log*
 
 # local-only docs
 docs/progress.md
+.vscode
 
 # Local Netlify folder
 .netlify

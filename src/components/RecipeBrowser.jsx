@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { buildShoppingList } from '../data/categories.js';
 import { tagEmojis } from '../data/tagConfig.js';
-import { marked } from 'marked';
 
 function CopyButton({ getText }) {
   const [copied, setCopied] = useState(false);
@@ -54,8 +53,6 @@ export default function RecipeBrowser({ recipes }) {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [sharedRecipes, setSharedRecipes] = useState(null); // null = normal mode, array = shared view
   const [shareCopied, setShareCopied] = useState(false);
-  const [cookingPlan, setCookingPlan] = useState(null);
-  const [planLoading, setPlanLoading] = useState(false);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
@@ -145,51 +142,21 @@ export default function RecipeBrowser({ recipes }) {
     ).join('\n');
   };
 
-  const generateCookingPlan = async () => {
-    setView('cooking-plan');
-    setPlanLoading(true);
-    setCookingPlan(null);
-    setMobileDrawerOpen(false);
-
+  const generateCookingPlan = () => {
     const jobId = crypto.randomUUID();
     const recipeData = myListRecipes.map(r => ({
       title: r.title,
       method: extractMethod(r.id),
     }));
+    setMobileDrawerOpen(false);
 
-    try {
-      // Trigger background function — returns 202 immediately
-      await fetch('/api/cooking-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipes: recipeData, jobId }),
-      });
+    window.open(`/cooking-plan?id=${jobId}`, '_blank');
 
-      // Poll for result every 4 seconds
-      const poll = async () => {
-        try {
-          const res = await fetch(`/api/cooking-plan-status?id=${jobId}`);
-          const data = await res.json();
-          if (data.status === 'done') {
-            setCookingPlan(data.plan);
-            setPlanLoading(false);
-          } else if (data.status === 'error') {
-            setCookingPlan('Failed to generate plan. Please try again.');
-            setPlanLoading(false);
-          } else {
-            setTimeout(poll, 4000);
-          }
-        } catch {
-          setCookingPlan('Failed to generate plan. Please try again.');
-          setPlanLoading(false);
-        }
-      };
-
-      setTimeout(poll, 6000); // Give Claude a head start before first poll
-    } catch {
-      setCookingPlan('Failed to generate plan. Please try again.');
-      setPlanLoading(false);
-    }
+    fetch('/api/cooking-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipes: recipeData, jobId }),
+    });
   };
 
   return (
@@ -476,22 +443,6 @@ export default function RecipeBrowser({ recipes }) {
                     ))
               }
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cooking plan overlay */}
-      {view === 'cooking-plan' && (
-        <div class="rb-fullview">
-          <div class="rb-fullview-header">
-            <button class="rb-back-btn" onClick={() => setView('browse')}>← Back to Browse</button>
-            <h2>Cooking Plan</h2>
-          </div>
-          <div class="rb-fullview-body">
-            {planLoading
-              ? <p class="cooking-plan-loading">Generating your cooking plan…</p>
-              : <div class="cooking-plan-text" dangerouslySetInnerHTML={{ __html: marked(cookingPlan) }} />
-            }
           </div>
         </div>
       )}

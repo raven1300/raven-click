@@ -12,6 +12,11 @@ export default async (req) => {
   const { recipes, jobId } = await req.json();
   const store = getStore('cooking-plans');
 
+  if (process.env.COOKING_PLAN_ENABLED !== 'true') {
+    await store.set(jobId, JSON.stringify({ status: 'error' }), { ttl: 60 });
+    return;
+  }
+
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
