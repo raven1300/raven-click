@@ -4,15 +4,15 @@ A personal recipe browser and meal planning tool built with Astro. Browse recipe
 
 ## Features
 
-- **Recipe browser** — grid of recipe cards with thumbnail images, tag badges, and Add to List button
-- **Tag filtering** — filter by ingredient, cuisine, cook method, or dish type using AND logic (sidebar with emoji tags)
-- **Search** — filter recipes by title via the search modal
-- **My List** — save up to 6 recipes; view full recipes with ingredients and method side by side
-- **Shopping list** — automatically generated from your list, grouped into categories (vegetables, meats, dairy, etc.) and copied to clipboard
-- **Individual recipe pages** — each recipe has its own page at `/recipes/<slug>/` with ingredients and method
-- **Dark mode** — dark mode default with OS preference detection; toggle in the header
-- **Mobile responsive** — drawer-based filter and list panels for small screens
-- **RSS feed** — available at `/rss.xml`
+- **Recipe browser**: grid of recipe cards with thumbnail images, tag badges, and Add to List button
+- **Tag filtering**: filter by ingredient, cuisine, cook method, or dish type using AND logic (sidebar with emoji tags)
+- **Search**: filter recipes by title via the search modal
+- **My List**: save up to 6 recipes; view full recipes with ingredients and method side by side
+- **Shopping list**: automatically generated from your list, grouped into categories (vegetables, meats, dairy, etc.) and copied to clipboard
+- **Individual recipe pages**: each recipe has its own page at `/recipes/<slug>/` with ingredients and method
+- **Dark mode**: dark mode default with OS preference detection; toggle in the header
+- **Mobile responsive**: drawer-based filter and list panels for small screens
+- **RSS feed**: available at `/rss.xml`
 
 ## Recipe Files
 
