@@ -17,7 +17,7 @@ ingredients:
   - 3½ tsp curry powder
   - 1¼ tsp salt
   - 2 tsp white sugar
-  - 750g chicken thigh fillets, cut into bite-sized pieces
+  - 750g chicken thighs
   - ½ onion, grated
   - 2 tbsp oil, separated
   - 3-6 birds eye chillies, finely chopped
@@ -30,7 +30,7 @@ ingredients:
   - 400g coconut milk
   - 2 tbsp peanut butter
   - 2 tbsp lime juice
-  - 3 makrut lime leaves
+  - 3 kaffir lime leaves
   - 1 lemongrass stalk
 source: "https://www.recipetineats.com/chicken-satay-curry/"
 video: "aESMdj1xQss"
@@ -52,7 +52,7 @@ video: "aESMdj1xQss"
 
 7. Return mixture to skillet; add remaining ¼ cup peanuts, kecap manis, soy sauce, coconut milk, and peanut butter.
 
-8. Crush and add makrut lime leaves and lemongrass; add cooked chicken.
+8. Crush and add kaffir lime leaves and lemongrass; add cooked chicken.
 
 9. Bring to simmer over medium-low heat for 15 minutes until thickened.
 

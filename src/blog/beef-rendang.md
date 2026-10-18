@@ -9,11 +9,10 @@ image:
 tags: ["beef", "Asian", "one pot", "dinner party"]
 shortName: Beef Rendang
 ingredients:
-  - 12 dried chilies (rehydrated) or 12 large fresh chilies
+  - 12 dried red chilies or 12 large fresh chilies
   - 1 small onion, finely chopped
   - 5 cloves garlic, minced
   - 3 lemongrass stalks (white part only), sliced
-  - 1½ tbsp fresh galangal, finely chopped
   - 1½ tbsp fresh ginger, minced
   - 2 tbsp oil
   - 2 lb (1 kg) chuck steak, cut into 4cm cubes
@@ -35,7 +34,7 @@ video: ""
 
 ## Method
 
-1. Process chillies, onion, garlic, lemongrass, galangal, and ginger in a food processor until a fine paste forms.
+1. Process chillies, onion, garlic, lemongrass, and ginger in a food processor until a fine paste forms.
 
 2. Heat oil in a large pot; brown beef in batches, then remove.
 

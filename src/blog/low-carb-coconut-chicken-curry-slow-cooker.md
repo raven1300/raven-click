@@ -14,7 +14,7 @@ ingredients:
   - 1 tsp fresh ginger, grated
   - 1/2 onion, diced
   - 2 tbsp curry paste
-  - 680g chicken breast or thighs, cut into pieces
+  - 750g chicken thighs
   - 1 can (400ml) coconut milk
   - 1 cup vegetable stock
   - 2 medium potatoes, cubed (optional, omit for strict low-carb)

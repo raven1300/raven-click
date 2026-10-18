@@ -9,7 +9,7 @@ image:
 tags: ["chicken", "one pot", "Thai"]
 shortName: Coconut Lime Chicken
 ingredients:
-  - 8 skinless boneless chicken thighs
+  - 750g chicken thighs
   - 2 teaspoons sea salt flakes
   - 1 teaspoon ground pepper
   - 1 tablespoon flour (gluten-free optional)

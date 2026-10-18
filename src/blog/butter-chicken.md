@@ -9,7 +9,7 @@ image:
 tags: ["chicken", "Indian", "curry", "stovetop", "add more veg"]
 shortName: Butter Chicken
 ingredients:
-  - 750g / 1.5 lb chicken thighs, boneless skinless, cut into bite-size pieces
+  - 1kg chicken thighs
   - 1 cup plain yogurt, full fat
   - 1 tbsp lemon juice
   - 1 tsp turmeric powder

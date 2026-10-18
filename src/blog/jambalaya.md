@@ -11,8 +11,8 @@ shortName: Jambalaya
 ingredients:
   - 1 tbsp vegetable oil
   - 180g (6oz) smoked bacon, chopped
-  - 200g (7oz) andouille or smoked sausage, sliced 0.5cm thick
-  - 300g (10oz) skinless boneless chicken thigh, cut into 2.5cm pieces
+  - 200g (7oz) kransky or smoked sausage, sliced 0.5cm thick
+  - 500g chicken thighs
   - 12 large raw prawns/shrimp, peeled
   - 4 garlic cloves, minced
   - 1 tbsp (15g) butter

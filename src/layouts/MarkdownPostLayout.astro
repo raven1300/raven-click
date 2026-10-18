@@ -49,7 +49,7 @@ const formatteddate = `${ordinal(d.getDate())} of ${d.toLocaleString("en", {mont
   )}
 
   {frontmatter.video && (
-    <iframe width="560" height="315" src={`https://www.youtube.com/embed/${frontmatter.video}`} allowfullscreen></iframe>
+    <iframe style="margin-top: 1.5rem" width="560" height="315" src={`https://www.youtube.com/embed/${frontmatter.video}`} allowfullscreen></iframe>
   )}
 
   <slot />

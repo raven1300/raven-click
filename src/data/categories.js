@@ -29,7 +29,7 @@ export const categories = {
   "dairy": {
     keywords: [
       "parmesan", "cream", "butter", "milk", "egg whites", "cheese", "cheddar",
-      "eggs", "yoghurt", "mayo", "mayonaise", "feta", "chorizo", "yogurt", "ricotta",
+      "eggs", "yoghurt", "feta", "chorizo", "yogurt", "ricotta",
       "egg yolks", "mozzarella", "egg",
     ],
     exclude: ["peanut butter", "coconut milk"],
@@ -55,7 +55,7 @@ export const categories = {
       "turmeric", "garam masala", "curry powder", "cayenne", "chili powder",
       "cardamom", "cinnamon", "star anise", "bay", "ginger", "galangal",
       "lemongrass", "fennel", "sage", "parsley", "cilantro", "chives",
-      "tamarind", "sesame seed", "mustard seed", "broth", "garlic", "garlic powder", "nutmeg",
+      "tamarind", "sesame seed", "mustard seed", "broth", "garlic", "garlic powder", "nutmeg", "clove powder",
       "mixed herbs", "cornstarch", "recipe base", "curry leaves",
     ],
     exclude: [],
@@ -66,6 +66,7 @@ export const categories = {
       "ketchup", "bbq sauce", "oyster sauce", "worcestershire", "sriracha",
       "hot sauce", "tamari", "kecap manis", "mirin", "cooking wine",
       "mustard", "tahini", "wine", "miso", "marinara", "pizza sauce", "enchilada sauce",
+      "mayo", "mayonnaise",
       "tomato paste", "tomato puree", "passata", "peanut butter",
     ],
     exclude: [],
@@ -76,7 +77,7 @@ export const categories = {
   },
   "sweeteners": {
     keywords: ["honey", "maple syrup", "sugar", "coconut"],
-    exclude: ["desiccated coconut", "coconut milk", "coconut oil"],
+    exclude: ["coconut milk", "coconut oil"],
   },
   "other": {
     keywords: [],

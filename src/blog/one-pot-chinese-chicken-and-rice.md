@@ -13,7 +13,7 @@ ingredients:
   - 2 garlic cloves, minced
   - 1 tsp ginger, grated
   - 1 onion, finely chopped
-  - 500g (1 lb) chicken thighs, skinless boneless, halved
+  - 500g chicken thighs
   - 1 big bunch Chinese broccoli, thick stems separated from leafy parts
   - 1 cup (180g) uncooked white rice
   - 1½ cups (375 ml) low-salt chicken stock

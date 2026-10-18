@@ -13,7 +13,7 @@ ingredients:
   - 1 tbsp olive oil
   - 1 onion, finely chopped
   - 2 garlic cloves, minced
-  - 500g (1 lb) chicken thigh, cut into bite-size pieces
+  - 500g chicken thighs
   - 2.5 tbsp flour (or 1½ tbsp cornstarch)
   - 2 cups (500 ml) milk
   - 2 cups (500 ml) chicken stock

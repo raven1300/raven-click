@@ -9,7 +9,7 @@ image:
 tags: ["chicken", "slow cooker", "Mexican", "wraps"]
 shortName: Cheesy Chicken Burritos
 ingredients:
-  - 1340g (48oz) boneless skinless chicken thighs
+  - 1.5kg chicken thighs
   - 60g (2 packets) taco seasoning
   - 15g (1 Tbsp) lime juice
   - 15g (1 Tbsp) chicken bouillon

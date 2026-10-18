@@ -9,7 +9,7 @@ image:
 tags: ["chicken", "one pot", "baked", "Mediterranean", "pasta"]
 shortName: Greek Chicken Orzo
 ingredients:
-  - 1 lb/500g boneless skinless chicken thighs, cubed
+  - 500g chicken thighs
   - 4 garlic cloves, minced
   - 2 tbsp dried oregano
   - 2 tbsp olive oil

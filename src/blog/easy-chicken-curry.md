@@ -13,7 +13,7 @@ ingredients:
   - 2 garlic cloves, minced
   - 2 tsp ginger, grated
   - ½ onion, finely chopped
-  - 500g/1 lb chicken thighs, sliced
+  - 500g chicken thighs
   - 2.5 tbsp curry powder
   - 270 ml/1.25 cups coconut milk
   - 1.5 cups (375 ml) low-sodium chicken stock

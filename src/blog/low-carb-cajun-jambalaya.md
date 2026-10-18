@@ -6,7 +6,7 @@ author: Raven
 image:
     url: "https://fitmencook.com/wp-content/uploads/2023/03/DSC00255-311.jpg"
     alt: "Low-carb Cajun jambalaya with cauliflower rice, sausage, and shrimp"
-tags: ["chicken", "sausage", "one pot"]
+tags: ["chicken", "sausage", "one pot", "low carb"]
 shortName: Cajun Jambalaya
 ingredients:
   - 1 head cauliflower, cut into florets

@@ -10,7 +10,12 @@ export default function CookingPlanPage() {
     const jobId = params.get('id');
     if (!jobId) { setError(true); return; }
 
+    let attempts = 0;
+    const MAX_ATTEMPTS = 30; // 2 minutes at 4s intervals
+
     const poll = async () => {
+      if (attempts >= MAX_ATTEMPTS) { setError(true); return; }
+      attempts++;
       try {
         const res = await fetch(`/api/cooking-plan-status?id=${jobId}`);
         const data = await res.json();

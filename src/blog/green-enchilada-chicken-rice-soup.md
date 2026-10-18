@@ -1,7 +1,7 @@
 ---
 title: Green Enchilada Chicken & Rice Soup
 pubDate: 2026-03-20
-description: "Slow-cooked chicken thighs in a green enchilada and Hatch chili sauce, mixed with jasmine rice and topped with honey, cilantro, and Greek yogurt."
+description: "Slow-cooked chicken thighs in a green enchilada and green chilli sauce, mixed with jasmine rice and topped with honey, cilantro, and Greek yogurt."
 author: Raven
 image:
     url: "/images/green-enchilada.png"
@@ -9,9 +9,9 @@ image:
 tags: ["chicken", "rice", "soup", "slow cooker", "Mexican"]
 shortName: Green Enchilada Soup
 ingredients:
-  - 1790g (64oz) diced boneless, skinless chicken thighs
+  - 1.5kg chicken thighs
   - 420g (1¾ cups) green enchilada sauce
-  - 226g (8oz) Hatch green chiles
+  - 226g (8oz) green chillies
   - 1 white onion
   - Juice of 1 lime
   - 1½ Tbsp salt
@@ -28,7 +28,7 @@ video: ""
 
 ## Method
 
-1. Add chicken thighs, green enchilada sauce, Hatch green chiles, diced white onion, lime juice, salt, garlic powder, and a dash of black pepper to the slow cooker. Stir everything together to evenly coat the chicken with the sauce and seasonings. Cover the slow cooker and cook on high for 2–3 hours or low for 3–4 hours, until the chicken is tender and fully cooked.
+1. Add chicken thighs, green enchilada sauce, green chillies, diced white onion, lime juice, salt, garlic powder, and a dash of black pepper to the slow cooker. Stir everything together to evenly coat the chicken with the sauce and seasonings. Cover the slow cooker and cook on high for 2–3 hours or low for 3–4 hours, until the chicken is tender and fully cooked.
 
 2. When the chicken is done cooking, pour chicken bone broth into a pot and bring to a boil. Once broth is boiling, pour in the jasmine rice and let boil for 10 minutes uncovered.
 

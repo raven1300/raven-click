@@ -9,7 +9,7 @@ image:
 tags: ["chicken", "one pot", "pasta", "Italian"]
 shortName: Whipped Ricotta Pasta
 ingredients:
-  - 500g chicken thigh fillets, diced
+  - 500g chicken thighs
   - ½ tsp salt
   - ¼ tsp black pepper
   - 220g sun-dried tomato strips in oil, drained (reserve oil)

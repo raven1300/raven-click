@@ -1,6 +1,5 @@
 import { useState } from 'preact/hooks';
-
-const STORAGE_KEY = 'raven-recipes-list';
+import { LIST_KEY as STORAGE_KEY } from '../data/storageKeys.js';
 
 function readList() {
   try {

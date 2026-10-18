@@ -9,7 +9,7 @@ image:
 tags: ["chicken", "rice", "slow cooker", "Asian"]
 shortName: Peanut Miso Chicken
 ingredients:
-  - 1340g (48oz) boneless, skinless chicken thighs
+  - 1.5kg chicken thighs
   - 120g (½ cup) peanut butter
   - 60g (4 Tbsp) white miso paste
   - 60g (4 Tbsp) soy sauce

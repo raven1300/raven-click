@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { buildShoppingList } from '../data/categories.js';
 import { tagEmojis } from '../data/tagConfig.js';
+import { LIST_KEY, TAGS_KEY } from '../data/storageKeys.js';
 
 function CopyButton({ getText }) {
   const [copied, setCopied] = useState(false);
@@ -19,8 +20,6 @@ function CopyButton({ getText }) {
   );
 }
 
-const LIST_KEY = 'raven-recipes-list';
-const TAGS_KEY = 'raven-recipes-tags';
 const LIST_MAX = 6;
 
 function readSet(key) {
@@ -126,7 +125,11 @@ export default function RecipeBrowser({ recipes }) {
 
   const searchResults = searchQuery.trim().length === 0
     ? []
-    : recipes.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    : recipes.filter(r => {
+        const q = searchQuery.toLowerCase();
+        return r.title.toLowerCase().includes(q)
+          || r.ingredients.some(i => i.toLowerCase().includes(q));
+      });
 
   useEffect(() => { if (searchOpen) searchInputRef.current?.focus(); }, [searchOpen]);
 
@@ -158,6 +161,8 @@ export default function RecipeBrowser({ recipes }) {
       body: JSON.stringify({ recipes: recipeData, jobId }),
     });
   };
+
+  const shoppingList = view === 'shopping' ? buildShoppingList(myListRecipes) : '';
 
   return (
     <div class="rb-layout">
@@ -458,10 +463,10 @@ export default function RecipeBrowser({ recipes }) {
             {myListRecipes.length === 0
               ? <p>No recipes in your list. Go back and add some.</p>
               : <div class="shopping-list-wrapper">
-                  <CopyButton getText={() => buildShoppingList(myListRecipes)} />
+                  <CopyButton getText={() => shoppingList} />
                   <textarea
                     class="shopping-list-textarea"
-                    value={buildShoppingList(myListRecipes)}
+                    value={shoppingList}
                     readOnly
                   />
                 </div>
