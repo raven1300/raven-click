@@ -6,8 +6,9 @@ Last updated 2026-10-18. Nothing has been built yet. This is where planning stop
 
 - [x] **Rename the GitHub repo** from `recipe-filter` to `raven-click` (done 2026-10-25).
 - [x] **Update the git remote** to https://github.com/raven1300/raven-click.git (done 2026-10-25).
-- [ ] **Check Netlify still points at the renamed repo** (Site configuration → Build & deploy → Repository). Reconnect the *existing* site. Don't create a new one.
-- [ ] Optional: rename the local folder `C:\code\recipe-filter` to match.
+- [x] **Check Netlify still points at the renamed repo** (confirmed 2026-10-25: deploy published, site working).
+- [ ] Rename the local folder `C:\code\recipe-filter` to `C:\code\raven-click`.
+- [ ] Delete the unused `C:\code\training-record` folder.
 - The **domain stays raven.click**. Nothing to change there.
 - [ ] Answer the questions at the bottom of this file.
 
