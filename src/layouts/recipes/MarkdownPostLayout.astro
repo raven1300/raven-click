@@ -1,0 +1,56 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import AddToListButton from "../../components/recipes/AddToListButton";
+
+const { frontmatter, recipeId } = Astro.props;
+const rawDate = frontmatter.pubDate;
+let d = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
+if (!d || !isFinite(d.getTime())) {
+  d = new Date();
+}
+
+function ordinal(n: number) {
+  const hundredRemainder = n % 100;
+  if (hundredRemainder >= 11 && hundredRemainder <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
+const formatteddate = `${ordinal(d.getDate())} of ${d.toLocaleString("en", {month: "long"})}, ${d.getFullYear()}`;
+---
+<BaseLayout pageTitle={frontmatter.title}>
+  <p class="recipe-meta"><b>By {frontmatter.author}</b> &mdash; <i>{formatteddate}</i></p>
+  <p>{frontmatter.description}</p>
+  <img src={frontmatter.image.url} alt={frontmatter.image.alt} class="recipe-hero-img" />
+
+  <div class="recipe-tags">
+    {frontmatter.tags.map((tag: string) => (
+      <span class="tag"><a href={`/recipes/tags/${tag}`}>{tag}</a></span>
+    ))}
+  </div>
+
+  {frontmatter.ingredients && frontmatter.ingredients.length > 0 && (
+    <div class="ingredients">
+      <h3>Ingredients</h3>
+      <ul>
+        {frontmatter.ingredients.map((ing: string) => <li>{ing}</li>)}
+      </ul>
+    </div>
+  )}
+
+  {recipeId && <AddToListButton recipeId={recipeId} client:load />}
+
+  {frontmatter.source && (
+    <p class="recipe-source">Original recipe: <a href={frontmatter.source} target="_blank" rel="noopener noreferrer">{frontmatter.source}</a></p>
+  )}
+
+  {frontmatter.video && (
+    <iframe style="margin-top: 1.5rem" width="560" height="315" src={`https://www.youtube.com/embed/${frontmatter.video}`} allowfullscreen></iframe>
+  )}
+
+  <slot />
+</BaseLayout>

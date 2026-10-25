@@ -1,23 +1,34 @@
 # Training record — planning snapshot
 
-Last updated 2026-10-18. Nothing has been built yet. This is where planning stopped, plus the questions still to answer.
+Last updated 2026-10-25. Training itself isn't built yet. This is where planning stopped, plus the questions still to answer.
 
 ## To do (Nick)
 
 - [x] **Rename the GitHub repo** from `recipe-filter` to `raven-click` (done 2026-10-25).
 - [x] **Update the git remote** to https://github.com/raven1300/raven-click.git (done 2026-10-25).
 - [x] **Check Netlify still points at the renamed repo** (confirmed 2026-10-25: deploy published, site working).
-- [ ] Rename the local folder `C:\code\recipe-filter` to `C:\code\raven-click`.
-- [ ] Delete the unused `C:\code\training-record` folder.
+- [x] Rename the local folder `C:\code\recipe-filter` to `C:\code\raven-click` (done 2026-10-25).
+- [x] Delete the unused `C:\code\training-record` folder (done 2026-10-25).
 - The **domain stays raven.click**. Nothing to change there.
 - [ ] Answer the questions at the bottom of this file.
 
 ## Site structure
 
-- **raven.click**: a neutral landing page with two buttons, Recipes and Training, and a generic raven.click header.
-- **/recipes**: stays exactly as it is.
-- **/training**: its own layout, header, components folder, Netlify functions and Blobs store. No links to or from the recipe section.
-- **Repo rename** (recipe-filter → something like raven-click): update the git remote afterwards. Reconnect the *existing* Netlify site to the renamed repo. Don't make a new site, because the stored data lives with the site.
+Agreed 2026-10-25. The site should make it easy to add more features later.
+
+- **Shared site header** on every page: a "raven.click" text logo (a real logo comes later) that links to `/`, then About, Recipes and Training. The Home link goes. The header and the landing page are built from a single nav list, so adding a feature means adding one entry.
+- **raven.click (`/`)**: a landing page with a card or button for each feature.
+- **/recipes**: works exactly as before. The only visible change is the new shared header.
+- **/training**: its own layout, components, stylesheet, Netlify functions (`training-` prefix) and Blobs store. It does not reuse recipe code.
+- **/about**: will become a site-wide page later. For now it stays as it is, in the recipe layout.
+- **Styling**: three separate stylesheets for the site header and landing page, recipes, and training. Each has its own light and dark colours. The dark mode toggle is site-wide.
+- **Code layout**: everything to do with recipes sits in a `recipes/` folder (`src/components/recipes/`, `src/layouts/recipes/`, `src/data/recipes/`, `src/content/recipes/`, `src/styles/recipes.css`, `public/recipes/images/`). Training will follow the same pattern.
+- **URLs moved under /recipes/** (2026-10-25): `/cooking-plan`, `/tags/…`, `/rss.xml` and `/images/…` now live under `/recipes/`. The old addresses permanently redirect there through `public/_redirects`.
+
+### Build steps
+1. [x] Move recipe code into `recipes/` folders and recipe URLs under `/recipes/`.
+2. [ ] Shared site header, nav list and new landing page.
+3. [ ] Placeholder `/training` page with its own layout and stylesheet.
 
 ## How it works
 

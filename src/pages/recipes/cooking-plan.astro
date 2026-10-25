@@ -1,0 +1,7 @@
+---
+import BaseLayout from '../../layouts/recipes/BaseLayout.astro';
+import CookingPlanPage from '../../components/recipes/CookingPlanPage.jsx';
+---
+<BaseLayout pageTitle="Cooking Plan">
+  <CookingPlanPage client:only="preact" />
+</BaseLayout>

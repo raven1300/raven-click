@@ -1,0 +1,5 @@
+# Recipe pages that moved under /recipes/ (2026-10-25)
+/cooking-plan   /recipes/cooking-plan        301
+/tags/*         /recipes/tags/:splat         301
+/rss.xml        /recipes/rss.xml             301
+/images/*       /recipes/images/:splat       301
