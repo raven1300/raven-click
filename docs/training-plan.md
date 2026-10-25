@@ -1,6 +1,6 @@
 # Training record — planning snapshot
 
-Last updated 2026-10-25. Training itself isn't built yet. This is where planning stopped, plus the questions still to answer.
+Last updated 2026-10-25. Training itself isn't built yet; access is decided. This is where planning stopped, plus the questions still to answer.
 
 ## To do (Nick)
 
@@ -50,10 +50,22 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 - Viewed on the site: past sessions and how each exercise has progressed.
 - An "Export to CSV" button acts as a backup that opens in Google Sheets or Excel.
 
-**Friends**
-- Everyone uses one shared password or PIN. No separate logins.
-- Pick your name from a dropdown. The phone remembers it, so you only choose once.
-- Each person has their own logs and history. Anyone can see anyone's data, which is fine because there are no privacy concerns.
+**Access (decided 2026-10-25)**
+- The whole of `/training` is behind a PIN. A Netlify Edge Function checks for a valid login before any training page loads. Recipes and the landing page stay public.
+- **No accounts.** No sign-up, emails or password resets.
+- **Personal PINs:** each friend has their own PIN, and Nick sets them up on a "manage people" screen. The PIN identifies the person, so there's no name dropdown.
+- **Admin PIN:** Nick has an admin PIN that also unlocks admin-only features: the weekly schedule, managing people, editing programs and switching friend access on or off. The server refuses these actions for anyone who isn't admin, as well as hiding them.
+- **Staying logged in:** a correct PIN gives the device a signed cookie that records who the person is and whether they're admin. It can't be faked.
+- **Controlling access:** Nick can pause or remove one friend, or turn all friend access off with one switch.
+- **Guessing:** a short lockout after several wrong PIN attempts.
+- The PIN secrets and the cookie signing key live in Netlify environment variables, not in the code.
+
+**Friends and shared data**
+- Each person has their own logs and history. Everyone can see everyone's data, to encourage each other.
+- Everything opens on your own data by default.
+- **Logging for someone else** is a deliberate step ("Log for someone else", then pick the person). A banner ("Logging for **Sam**") stays on screen with a button to switch back, and it switches back on its own when you leave the session. This covers a friend whose phone is flat or left behind.
+- **Every entry records who typed it** (for example "entered by Nick for Sam"), and the person it belongs to sees that in their history.
+- **Editing and deleting** an entry is allowed for the person who entered it, the person it belongs to, and the admin (Nick).
 - Friends don't need the schedule. They open the site, record their numbers, and see them next time.
 
 **Storage**
@@ -77,11 +89,11 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 ### Friends
 9. Do friends have **their own 4-day programs** (set up like yours), or do they just **pick or type an exercise** and log it freeform?
 10. Could a friend follow **your program** (same days and exercises) while logging their own numbers?
-11. Who adds people to the name dropdown: only you (a simple "manage people" screen), or anyone can add themselves?
+11. ~~Who adds people?~~ **Answered:** only Nick, on the "manage people" screen, which also sets each person's PIN.
 12. Showing the schedule only for you is easy. Should friends be able to switch it on later, or never?
 
 ### History
 13. What matters most to see: a list of past sessions, one exercise's progress over time (for example a chart of bench press weight), personal bests, or all of these?
 
 ### Access
-14. Is one PIN for everyone fine, including for editing programs? Or should program and people setup need a separate admin PIN that only you know?
+14. ~~One PIN or an admin PIN?~~ **Answered:** personal PINs plus an admin PIN. See "Access" above.
