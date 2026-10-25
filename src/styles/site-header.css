@@ -1,0 +1,122 @@
+/* Shared site header, used on every page.
+   Colours are prefixed --site- so they never clash with a feature's own stylesheet. */
+
+:root {
+  --site-header-bg:     #27272a;
+  --site-header-text:   #f4f4f5;
+  --site-header-accent: #fbbf24;
+  --site-header-hover:  rgba(255, 255, 255, 0.08);
+}
+
+html.dark {
+  --site-header-bg:     #18181b;
+  --site-header-text:   #e4e4e7;
+  --site-header-accent: #fbbf24;
+  --site-header-hover:  rgba(255, 255, 255, 0.06);
+}
+
+.site-header {
+  background-color: var(--site-header-bg);
+  padding: 0 1rem;
+  flex-shrink: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+.site-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 0.75rem 0;
+}
+
+.site-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--site-header-text);
+  text-decoration: none;
+}
+
+.site-logo:hover {
+  color: var(--site-header-accent);
+}
+
+.site-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-menu-btn {
+  background: none;
+  border: none;
+  color: var(--site-header-text);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Mobile: links hidden, full width when the menu is open */
+.site-nav {
+  display: none;
+  width: 100%;
+  order: 10;
+  padding-bottom: 0.5rem;
+}
+
+.site-header:has(.site-menu-btn[aria-expanded="true"]) .site-nav {
+  display: block;
+}
+
+.site-nav a {
+  display: block;
+  text-align: center;
+  padding: 10px 0;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--site-header-text);
+}
+
+.site-nav a:hover,
+.site-nav a:focus {
+  background-color: var(--site-header-hover);
+}
+
+.site-nav a.active {
+  color: var(--site-header-accent);
+}
+
+/* Desktop: links sit inline between the logo and the controls */
+@media screen and (min-width: 636px) {
+  .site-nav {
+    display: flex;
+    width: auto;
+    order: 0;
+    align-items: center;
+    padding-bottom: 0;
+  }
+
+  .site-nav a {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+  }
+
+  .site-nav a:hover,
+  .site-nav a:focus {
+    background: none;
+    color: var(--site-header-accent);
+  }
+
+  .site-menu-btn {
+    display: none;
+  }
+}

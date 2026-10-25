@@ -1,5 +1,5 @@
 ---
-import Header from '../../components/recipes/Header.astro';
+import SiteHeader from '../../components/site/SiteHeader.astro';
 import '../../styles/recipes.css';
 
 const { pageTitle } = Astro.props;
@@ -14,10 +14,7 @@ const { pageTitle } = Astro.props;
     <title>{pageTitle} — Raven Recipes</title>
   </head>
   <body class="recipe-page">
-    <Header />
+    <SiteHeader />
     <slot />
-    <script>
-      import "../../scripts/recipes/menu.js";
-    </script>
   </body>
 </html>

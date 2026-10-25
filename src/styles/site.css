@@ -1,0 +1,92 @@
+/* Site-level pages (landing page). Recipes and training have their own stylesheets. */
+
+:root {
+  --site-bg:        #f6f6f7;
+  --site-surface:   #ffffff;
+  --site-text:      #18181b;
+  --site-muted:     #52525b;
+  --site-border:    #e4e4e7;
+  --site-accent:    #b45309;
+}
+
+html.dark {
+  --site-bg:        #0f0f11;
+  --site-surface:   #1c1c20;
+  --site-text:      #f4f4f5;
+  --site-muted:     #a1a1aa;
+  --site-border:    #2e2e33;
+  --site-accent:    #fbbf24;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--site-bg);
+  color: var(--site-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.site-main {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+/* ===== Landing page ===== */
+
+.landing-intro h1 {
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.landing-intro p {
+  color: var(--site-muted);
+  font-size: 1.1rem;
+  margin: 0 0 2.5rem;
+}
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.feature-card {
+  display: block;
+  padding: 1.5rem;
+  background: var(--site-surface);
+  border: 1px solid var(--site-border);
+  border-radius: 0.75rem;
+  color: var(--site-text);
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.feature-card:hover,
+.feature-card:focus-visible {
+  border-color: var(--site-accent);
+  transform: translateY(-2px);
+}
+
+.feature-card h2 {
+  font-size: 1.4rem;
+  margin: 0 0 0.4rem;
+}
+
+.feature-card h2::after {
+  content: ' →';
+  color: var(--site-accent);
+}
+
+.feature-card p {
+  margin: 0;
+  color: var(--site-muted);
+}

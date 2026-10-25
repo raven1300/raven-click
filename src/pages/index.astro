@@ -1,8 +1,18 @@
 ---
-import BaseLayout from '../layouts/recipes/BaseLayout.astro';
-const pageTitle = "Home";
+import SiteLayout from '../layouts/site/SiteLayout.astro';
+import { features } from '../data/site/nav.js';
 ---
-<BaseLayout pageTitle={pageTitle}>
-  <p>A personal recipe collection. Browse, pick what you're making, and get a shopping list.</p>
-  <a href="/recipes/" class="cta-btn">Browse recipes →</a>
-</BaseLayout>
+<SiteLayout>
+  <section class="landing-intro">
+    <h1>raven.click</h1>
+    <p>Recipes, training, and whatever comes next.</p>
+  </section>
+  <div class="feature-cards">
+    {features.map(feature => (
+      <a href={feature.href} class="feature-card">
+        <h2>{feature.name}</h2>
+        <p>{feature.blurb}</p>
+      </a>
+    ))}
+  </div>
+</SiteLayout>

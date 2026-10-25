@@ -1,0 +1,27 @@
+---
+import { navLinks } from '../../data/site/nav.js';
+import MenuButton from './MenuButton.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import '../../styles/site-header.css';
+
+const { pathname } = Astro.url;
+const isActive = (href) => pathname.startsWith(href.replace(/\/$/, ''));
+---
+<header class="site-header">
+  <div class="site-header-row">
+    <a href="/" class="site-logo">raven.click</a>
+    <nav id="site-nav" class="site-nav">
+      {navLinks.map(link => (
+        <a href={link.href} class={isActive(link.href) ? 'active' : ''}>{link.name}</a>
+      ))}
+    </nav>
+    <div class="site-header-controls">
+      <ThemeToggle />
+      <MenuButton />
+    </div>
+  </div>
+</header>
+
+<script>
+  import '../../scripts/site/menu.js';
+</script>

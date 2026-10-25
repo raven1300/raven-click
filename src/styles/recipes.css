@@ -51,11 +51,16 @@ html {
 }
 
 body {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Text column for standard recipe pages; the site header sits above it at full width */
+.recipe-container {
   margin: 0 auto;
   width: 100%;
   max-width: 80ch;
-  padding: 1rem;
-  line-height: 1.6;
+  padding: 0 1rem 1rem;
 }
 
 * {
@@ -71,117 +76,6 @@ a {
   color: var(--primary);
 }
 
-/* ===== Header ===== */
-
-header {
-  background-color: var(--bg-header);
-  margin: -1rem -1rem 0 -1rem;
-  padding: 0 1rem;
-}
-
-.header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  padding: 0.75rem 0;
-}
-
-.site-name {
-  font-family: 'Crimson Pro', serif;
-  font-size: 1.6rem;
-  font-weight: 700;
-  font-style: italic;
-  color: var(--header-text);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-}
-
-.site-name:hover {
-  color: var(--nav-active);
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* ===== Nav ===== */
-
-.menu {
-  background: none;
-  border: none;
-  color: var(--header-text);
-  font-size: 1.1rem;
-  font-weight: bold;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-family: 'Lato', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Mobile: nav hidden, full-width when expanded */
-.nav-links {
-  display: none;
-  width: 100%;
-  order: 10;
-  margin: 0;
-  padding-bottom: 0.5rem;
-}
-
-:has(.menu[aria-expanded="true"]) .nav-links {
-  display: block;
-}
-
-.nav-links a {
-  display: block;
-  text-align: center;
-  padding: 10px 0;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--header-text);
-}
-
-.nav-links a:hover,
-.nav-links a:focus {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-.nav-links a.active {
-  color: var(--nav-active);
-}
-
-/* Desktop: nav sits inline between site name and controls */
-@media screen and (min-width: 636px) {
-  .nav-links {
-    display: flex;
-    width: auto;
-    order: 0;
-    align-items: center;
-    padding-bottom: 0;
-  }
-
-  .nav-links a {
-    display: inline-block;
-    padding: 0.5rem 1.25rem;
-  }
-
-  .nav-links a:hover,
-  .nav-links a:focus {
-    background: none;
-    color: var(--nav-active);
-  }
-
-  .menu {
-    display: none;
-  }
-}
-
 /* ===== Page title ===== */
 
 .page-title {
@@ -189,27 +83,6 @@ header {
   margin: 1.5rem 0 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--border);
-}
-
-/* ===== Home page CTA ===== */
-
-.cta-btn {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.6rem 1.5rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  background: var(--primary);
-  color: var(--primary-text);
-  border-radius: 0.375rem;
-  text-decoration: none;
-  font-family: 'Lato', sans-serif;
-  transition: background 0.15s;
-}
-
-.cta-btn:hover {
-  background: var(--primary-dark);
-  color: var(--primary-text);
 }
 
 /* ===== Footer ===== */
@@ -488,12 +361,6 @@ body.recipe-page {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-body.recipe-page header {
-  /* Reset the negative margins used when body has padding */
-  margin: 0;
-  flex-shrink: 0;
 }
 
 /* ===== Recipe browser layout ===== */
