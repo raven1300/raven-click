@@ -28,7 +28,7 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 ### Build steps
 1. [x] Move recipe code into `recipes/` folders and recipe URLs under `/recipes/`.
 2. [x] Shared site header, nav list (`src/data/site/nav.js`) and new landing page.
-3. [ ] Placeholder `/training` page with its own layout and stylesheet.
+3. [x] Placeholder `/training` page with its own layout (`src/layouts/training/`) and stylesheet (`src/styles/training.css`).
 
 ### Later
 - Recipes stylesheet: add a top border or edge in a recipe colour where the recipe page meets the charcoal site header, so it's clear where the header ends.
