@@ -147,7 +147,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **Stage 1 (login and admin basics): live since 2026-10-26** (pull request #1).
   - Netlify settings: `TRAINING_ADMIN_PASSWORD` and `TRAINING_SESSION_SECRET`, both secret, for the Production and Deploy Previews contexts.
   - Local testing: put test values for both in `.env.development` (git-ignored). `netlify dev` doesn't pass command-line environment variables to Edge Functions.
-- **Stage 2 (logging workouts): built 2026-10-26 on the `training-stage-2` branch**, tested locally (API checks plus a scripted run in headless Edge), and waiting for a Deploy Preview test.
+- **Stage 2 (logging workouts): live since 2026-10-26**, after local tests and Nick working through checklist section 6b on the Deploy Preview.
   - Dashboard tiles open the workout screen at `/training/workout/`, with everything in the "Workout screen" section above.
   - Adding a new exercise from inside the block builder's picker.
   - Each trained workout keeps a snapshot of its planned exercises and sets.
@@ -156,4 +156,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-Nick tests stage 2 on its Deploy Preview, then merges it. After that come stage 3 (history) and stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
+Stages 1 and 2 are live. Next come stage 3 (history) and stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
