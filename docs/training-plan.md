@@ -73,7 +73,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **In progress:** some sets logged and Finish not pressed, for example "4/10".
   - **Done:** every set logged. It turns done automatically, with no Finish needed.
   - **Finished early:** Finish was pressed with sets still empty.
-- **Tile details:** each workout has an **icon**, picked by Nick from a small line-icon set when building the block (for example footprints for Legs, an up arrow for Push, a down arrow for Pull, a flexed arm for Arms). Finished tiles show the **date** ("✓ 23 Oct"), and finished-early tiles show the count and date ("6/10 · 23 Oct"). In-progress tiles show the count only.
+- **Tile details:** each workout has an **icon**, picked by Nick from a small line-icon set when building the block (for example footprints for Legs, a dumbbell for Push, a gripping hand for Pull, a flexed arm for Arms; Nick found arrows confusing for Push and Pull). Finished tiles show the **date** ("✓ 23 Oct"), and finished-early tiles show the count and date ("6/10 · 23 Oct"). In-progress tiles show the count only.
 - **History** opens from the dashboard without starting a workout. It lists every exercise the person has logged, with search. Other people's history can be browsed too.
 
 **Workout screen**
