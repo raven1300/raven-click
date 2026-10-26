@@ -59,6 +59,8 @@ function WorkoutBody({ me }) {
   const [view, setView] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [drafts, setDrafts] = useState({});
+  // Rows the person unticked: their numbers stay visible, but nothing saves them again unless the person edits or re-ticks.
+  const [removed, setRemoved] = useState({});
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState({});
@@ -67,7 +69,7 @@ function WorkoutBody({ me }) {
   const [toast, toastView] = useToast();
   const focused = useRef(null);
   const latest = useRef({});
-  latest.current = { view, drafts };
+  latest.current = { view, drafts, removed };
 
   useEffect(() => {
     api(`session?${new URLSearchParams(query)}`).then(setView).catch(err => setLoadError(err.message));
@@ -89,6 +91,7 @@ function WorkoutBody({ me }) {
   const clearRows = keys => {
     setDrafts(d => { const next = { ...d }; keys.forEach(k => delete next[k]); return next; });
     setErrors(e => { const next = { ...e }; keys.forEach(k => delete next[k]); return next; });
+    setRemoved(r => { const next = { ...r }; keys.forEach(k => delete next[k]); return next; });
   };
 
   // Saves several rows in one request. Rows must already be complete.
@@ -106,12 +109,12 @@ function WorkoutBody({ me }) {
 
   // Earlier rows with complete typed numbers but no tick.
   const readyBefore = row => {
-    const { view: v, drafts: d } = latest.current;
+    const { view: v, drafts: d, removed: gone } = latest.current;
     const order = rowsInOrder(v);
     const at = order.findIndex(r => r.ex === row.ex && r.set === row.set && r.extra === row.extra);
     return order.slice(0, at).filter(r => {
       const draft = d[rowKey(r.ex, r.set, r.extra)];
-      return !findLogged(v, r) && hasTyped(draft) && !missing(typeOf(r.ex), draft).length;
+      return !findLogged(v, r) && !gone[rowKey(r.ex, r.set, r.extra)] && hasTyped(draft) && !missing(typeOf(r.ex), draft).length;
     });
   };
 
@@ -123,6 +126,7 @@ function WorkoutBody({ me }) {
       try {
         await post('unsave-set', row);
         setDrafts(d => ({ ...d, [key]: Object.fromEntries(FIELDS[typeOf(row.ex)].map(f => [f, String(logged[f] ?? '')])) }));
+        setRemoved(r => ({ ...r, [key]: true }));
       } catch (err) { setRowError([key], err.message); }
       setBusy(false);
       return;
@@ -142,17 +146,17 @@ function WorkoutBody({ me }) {
     if (!prev || prev === key) return;
     const [ex, set, x] = prev.split('|');
     const prevRow = { ex, set: Number(set), extra: x === 'x' };
-    const { view: v, drafts: d } = latest.current;
-    if (!v.canEdit || findLogged(v, prevRow) || !hasTyped(d[prev]) || missing(typeOf(ex), d[prev]).length) return;
+    const { view: v, drafts: d, removed: gone } = latest.current;
+    if (!v.canEdit || gone[prev] || findLogged(v, prevRow) || !hasTyped(d[prev]) || missing(typeOf(ex), d[prev]).length) return;
     if (await saveRows([prevRow])) toast(`Saved ${nameOf(ex)} set ${prevRow.set + 1}`);
   };
 
-  const unsavedRows = () => rowsInOrder(view).filter(r => !findLogged(view, r) && hasTyped(drafts[rowKey(r.ex, r.set, r.extra)]));
+  const unsavedRows = () => rowsInOrder(view).filter(r => { const k = rowKey(r.ex, r.set, r.extra); return !findLogged(view, r) && !removed[k] && hasTyped(drafts[k]); });
 
   const leave = () => {
     const unsaved = unsavedRows();
     if (!unsaved.length) { window.location.href = '/training/'; return; }
-    setSheet({ type: 'leave', count: unsaved.length });
+    setSheet({ type: 'leave', rows: unsaved });
   };
 
   // Plain render functions, not components, so inputs keep focus while typing.
@@ -178,7 +182,7 @@ function WorkoutBody({ me }) {
                 disabled={!!logged || !canEdit}
                 aria-label={`Set ${row.set + 1} ${f === 'secs' ? 'seconds' : f}`}
                 onFocus={() => onFocusRow(row)}
-                onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); }}
+                onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setRemoved(r => { const n = { ...r }; delete n[key]; return n; }); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); }}
               />
               {UNITS[f] && <span>{UNITS[f]}</span>}
             </label>
@@ -187,6 +191,7 @@ function WorkoutBody({ me }) {
         </div>
         <button class="tick" aria-pressed={logged ? 'true' : 'false'} aria-label={`${logged ? 'Untick' : 'Save'} set ${row.set + 1}`} disabled={!canEdit || busy} onClick={() => tick(row)}>✓</button>
         {errors[key] ? <span class="set-msg err">{errors[key]}</span>
+          : !logged && canEdit && removed[key] ? <span class="set-msg removed">Removed. Tap ✓ to save it again.</span>
           : !logged && canEdit && hasTyped(draft) ? <span class="set-msg hint">Not saved. Tap ✓</span> : null}
       </div>
     );
@@ -282,20 +287,30 @@ function WorkoutBody({ me }) {
           </div>
         </Sheet>
       )}
-      {sheet?.type === 'leave' && (
-        <Sheet title="Leave without saving?" onClose={() => setSheet(null)}>
-          <p style={{ margin: 0 }}>You've typed numbers for {sheet.count} set{sheet.count > 1 ? 's' : ''} that {sheet.count > 1 ? 'aren\'t' : 'isn\'t'} saved yet.</p>
-          <div class="row">
-            <button class="btn primary" onClick={async () => {
-              const ready = unsavedRows().filter(r => !missing(typeOf(r.ex), drafts[rowKey(r.ex, r.set, r.extra)]).length);
-              if (!ready.length || await saveRows(ready)) window.location.href = '/training/';
-              else setSheet(null);
-            }}>Save and leave</button>
-            <button class="btn" onClick={() => { window.location.href = '/training/'; }}>Leave without saving</button>
-            <button class="btn ghost" onClick={() => setSheet(null)}>Stay</button>
-          </div>
-        </Sheet>
-      )}
+      {sheet?.type === 'leave' && (() => {
+        const complete = sheet.rows.filter(r => !missing(typeOf(r.ex), drafts[rowKey(r.ex, r.set, r.extra)]).length);
+        return (
+          <Sheet title="Some numbers aren't saved" onClose={() => setSheet(null)}>
+            <p style={{ margin: 0 }}>You typed numbers that haven't been saved:</p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+              {sheet.rows.map(r => {
+                const incomplete = !complete.includes(r);
+                return <li key={rowKey(r.ex, r.set, r.extra)}>{nameOf(r.ex)} set {r.set + 1}{incomplete ? " (incomplete, can't be saved)" : ''}</li>;
+              })}
+            </ul>
+            <div class="row">
+              {complete.length > 0 && (
+                <button class="btn primary" onClick={async () => {
+                  if (await saveRows(complete)) window.location.href = '/training/';
+                  else setSheet(null);
+                }}>Save {complete.length > 1 ? 'them' : 'it'}, then leave</button>
+              )}
+              <button class="btn" onClick={() => { window.location.href = '/training/'; }}>Discard {sheet.rows.length > 1 ? 'them' : 'it'} and leave</button>
+              <button class="btn ghost" onClick={() => setSheet(null)}>Stay</button>
+            </div>
+          </Sheet>
+        );
+      })()}
       {sheet?.type === 'extra' && (
         <ExtraPicker
           exercises={exercises}
