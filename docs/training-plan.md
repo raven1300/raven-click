@@ -70,6 +70,11 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Saving** checks that every phase has weeks, every workout has a name and at least one exercise, and at least one person is chosen.
   - A queued block can be edited later from People.
 - **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
+- **Editing a running block (admin, later stage; agreed 2026-10-26):** in stage 1 only queued blocks can be edited. Later, Nick can edit a running block's workouts: swap, add or remove exercises, change sets, and rename workouts or change icons. Changes apply from then on.
+  - The **phase plan** (weeks and rep targets) stays locked once a block has started.
+  - Sets already logged keep their exercise and history.
+  - **Earlier weeks keep their colours:** each trained workout remembers the exercises and sets it had at the time, so a change in week 6 doesn't make weeks 1–5 look "finished early".
+  - Each person's block is still edited separately (Nick is happy to repeat a change per person).
 - **Adding exercises from the block builder (stage 2):** when the exercise picker's search finds no match, offer "+ Add '…' as a new exercise", with a type choice and the same "Did you mean…?" check. It's added to the list and the workout at once, so building a block never means leaving the builder. Until then: save the block queued for Nick, add the exercise on the Exercise list page, then edit the block from People.
 - **Removing people (admin, added 2026-10-26):** "Remove" on a person's card, with a confirmation, for anyone with **no logged sets**. It deletes them and all their blocks. Anyone with logged sets can only be paused, so training history is never lost. This covers test people, or a block started by mistake for the wrong person. Logged sets will live under `logs/<person>/` in Blobs, and that's what the check looks at.
 - **Renaming people (admin):** "Rename" on each person's card. Names must be unique. Blocks and history belong to the person's hidden ID, so renaming changes nothing else.
