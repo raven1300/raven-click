@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { ChevronDown, ChevronUp, Minus, Plus, X } from 'lucide-preact';
 import { api, setFlash } from './api.js';
 import Shell from './Shell.jsx';
-import { ICONS, Icon, Sheet, TYPE_LABEL, totalWeeks } from './ui.jsx';
+import { ICONS, Icon, Sheet, TYPE_LABEL, similarNames, totalWeeks } from './ui.jsx';
 
 const STANDARD_PLAN = [{ weeks: 4, reps: 10 }, { weeks: 4, reps: 8 }, { weeks: 4, reps: 6 }];
 const newId = () => (crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10));
@@ -10,13 +10,30 @@ const blankWorkout = () => ({ id: newId(), name: '', icon: 'dumbbell', items: []
 const copyOf = block => ({ plan: block.plan.map(ph => ({ ...ph })), workouts: block.workouts.map(w => ({ ...w, items: w.items.map(it => ({ ...it })) })) });
 const numberOrBlank = value => (value === '' ? NaN : Number(value));
 
-function ExercisePicker({ exercises, taken, onPick, onClose }) {
+function ExercisePicker({ exercises, taken, onPick, onAdded, onClose }) {
   const [query, setQuery] = useState('');
+  const [type, setType] = useState('weight');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   const q = query.trim().toLowerCase();
   const list = Object.entries(exercises).filter(([, x]) => !q || x.name.toLowerCase().includes(q)).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const exact = Object.values(exercises).some(x => x.name.toLowerCase() === q);
+  const similar = similarNames(query, exercises);
+  // Adds a brand-new exercise to the list and straight into this workout.
+  const addNew = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const data = await api('exercises', { method: 'POST', body: { name: query.trim(), type } });
+      onAdded(data.exercises, data.id);
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
   return (
     <Sheet title="Add an exercise" onClose={onClose}>
-      <p class="small muted" style={{ margin: 0 }}>Adds it to this workout with 2 sets.</p>
+      <p class="small muted" style={{ margin: 0 }}>Adds it to this workout with 2 sets. Not on the list? Type its name to add it.</p>
       <input id="pick-search" class="input" type="search" placeholder="Search the exercise list" value={query} onInput={e => setQuery(e.currentTarget.value)} aria-label="Search the exercise list" />
       <div class="list">
         {list.map(([id, x]) => (
@@ -26,7 +43,19 @@ function ExercisePicker({ exercises, taken, onPick, onClose }) {
         ))}
         {!list.length && <p class="muted" style={{ margin: 0 }}>No exercises match.</p>}
       </div>
-      <p class="small muted" style={{ margin: 0 }}>Not on the list? Add it on the Exercise list page first.</p>
+      {exact ? null : query.trim() && (
+        <div class="panel">
+          <b>Add &quot;{query.trim()}&quot; as a new exercise</b>
+          {similar.length > 0 && <p class="small" style={{ margin: 0, color: 'var(--accent)' }}>Did you mean {similar.slice(0, 3).join(' or ')}? If it's the same exercise, pick that one above so its history stays together.</p>}
+          <div class="row">
+            <select id="new-ex-type" class="select" value={type} onChange={e => setType(e.currentTarget.value)} aria-label="Exercise type">
+              {Object.entries(TYPE_LABEL).map(([t, label]) => <option key={t} value={t}>{label}</option>)}
+            </select>
+            <button class="btn primary" disabled={busy} onClick={addNew}>Add exercise</button>
+          </div>
+          {error && <p class="error-box" role="alert">{error}</p>}
+        </div>
+      )}
     </Sheet>
   );
 }
@@ -209,6 +238,7 @@ function BuilderBody({ me }) {
           exercises={exercises}
           taken={workouts[sheet.wi].items.map(it => it.ex)}
           onPick={id => { changeItems(sheet.wi, items => [...items, { ex: id, sets: 2 }]); setSheet(null); }}
+          onAdded={(list, id) => { setExercises(list); changeItems(sheet.wi, items => [...items, { ex: id, sets: 2 }]); setSheet(null); }}
           onClose={() => setSheet(null)}
         />
       )}

@@ -1,6 +1,7 @@
 import { adminUser, body, currentUser, fail, handle, json, settings, UserError } from '../lib/training/http.js';
 import { checkPassword, hashPassword, sameSecret } from '../lib/training/passwords.js';
-import { blocksKey, hasLoggedSets, slug, store, update } from '../lib/training/store.js';
+import { blocksKey, slug, store, update } from '../lib/training/store.js';
+import { countLoggedSets, deleteLogs } from '../lib/training/logs.js';
 
 // Everyone sees names (for browsing each other's history). Only the admin sees who's paused
 // and who has history, which decides whether they can be removed.
@@ -8,7 +9,7 @@ const listFor = (people, isAdmin) => Promise.all(Object.entries(people).map(asyn
   id,
   name: p.name,
   admin: !!p.admin,
-  ...(isAdmin ? { paused: !!p.paused, hasHistory: await hasLoggedSets(id) } : {}),
+  ...(isAdmin ? { paused: !!p.paused, hasHistory: !!await countLoggedSets(id) } : {}),
 })));
 
 async function checkPasswordFree(people, password, exceptId) {
@@ -25,7 +26,7 @@ function checkNameFree(people, name, exceptId) {
   if (Object.entries(people).some(([id, p]) => id !== exceptId && p.name.toLowerCase() === name.toLowerCase())) throw new UserError(409, `There's already someone called ${name}.`);
 }
 
-export default async (req) => handle(async () => {
+export default async (req, context) => handle(async () => {
   if (req.method === 'GET') {
     const user = await currentUser(req);
     if (user instanceof Response) return user;
@@ -41,7 +42,7 @@ export default async (req) => handle(async () => {
   let message = '';
 
   // Only someone with no logged sets can be removed, so no training history is ever lost.
-  if (input.action === 'remove' && await hasLoggedSets(input.id)) {
+  if (input.action === 'remove' && !!await countLoggedSets(input.id)) {
     return fail(409, 'They have logged sets, so they can only be paused.');
   }
 
@@ -77,9 +78,9 @@ export default async (req) => handle(async () => {
     }
     return current;
   });
-  if (input.action === 'remove') await store().delete(blocksKey(input.id));
+  if (input.action === 'remove') await Promise.all([store().delete(blocksKey(input.id)), deleteLogs(input.id)]);
 
   return json({ people: await listFor(data.people, true), message });
-});
+}, context);
 
 export const config = { path: '/api/training/people' };

@@ -58,6 +58,27 @@ A step-by-step check of the admin side of `/training`, to run on the live site a
 - [ ] After a block is completed, it appears under **Past blocks**, and any workout that was in progress shows **finished early**.
 - [ ] Build a block with a different phase plan (for example 2 phases of 3 weeks with no targets), start it, and check that the grid has 6 rows.
 
+## 6b. Logging a workout (stage 2)
+
+Run these as the test person, on a phone, against a running block.
+
+- [ ] On a Deploy Preview, the page shows the "Preview data" note. On the live site, it doesn't.
+- [ ] Tap a tile. The workout opens with the right week, phase and rep target, and empty set boxes. "Last" shows earlier numbers, or "First time doing this one".
+- [ ] Type a set's numbers, then tap into the next set's boxes. The first set turns pink and says "Saved", and the keyboard stays up.
+- [ ] Type a set without ticking, then tick a later set. Both save ("Also saved…").
+- [ ] Untick a set. Its numbers come back with "Not saved. Tap ✓".
+- [ ] Tick with a box empty. It asks for the missing number.
+- [ ] Try timed (seconds) and band (band + reps) exercises. Leaving the band empty saves "No band".
+- [ ] Add a note, change the "Trained on" date, and reload. Both are kept.
+- [ ] **+ Add exercise** adds an extra with 1 set. **+ Set** and **− Set** work, and the extra doesn't change the tile's count.
+- [ ] Press the back link with unsaved numbers. It asks "Save and leave", "Leave without saving" or "Stay".
+- [ ] **Finish workout** with sets missing: the tile shows "finished early" with the count and date. **Undo finish** reverses it.
+- [ ] Log every planned set. The tile turns pink with the date, without pressing Finish.
+- [ ] Open the same exercise the following week. "Last" shows this week's numbers.
+- [ ] As admin, complete the block while a workout is in progress. That tile shows finished early. **Reopen** puts it back to in progress.
+- [ ] As admin, in **Build a block**, search the exercise picker for a new name. "+ Add as a new exercise" adds it to the list and the workout.
+- [ ] Someone with logged sets shows no **Remove** button, only Pause.
+
 ## 7. Friend access (stage 1)
 
 - [ ] **Pause** the test person. In their window they see "Your access is paused. Ask Nick."

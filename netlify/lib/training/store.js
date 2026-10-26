@@ -3,11 +3,20 @@
 //   exercises       { exercises: { [id]: { name, type } } }
 //   blocks/<person> { blocks: [ { num, status, plan, workouts, notes, createdAt, startedAt?, completedAt? } ] }
 //   lockouts/<ip>   { fails, until }
-//   logs/<person>/… logged sets (stage 2). Anything under this prefix counts as training history.
+//   logs/<person>/<block> logged sets, see logs.js
 import { getStore } from '@netlify/blobs';
 import { STARTING_EXERCISES } from './exercises.js';
 
-export const store = () => getStore({ name: 'training', consistency: 'strong' });
+// Deploy previews and local testing use their own store, so testing never touches live data.
+// If the deploy context is ever missing, stay on the live store rather than hide real data.
+let storeName = 'training';
+export function useDeployContext(context) {
+  const deploy = context?.deploy?.context;
+  storeName = !deploy || deploy === 'production' ? 'training' : 'training-preview';
+}
+export const isPreviewStore = () => storeName !== 'training';
+
+export const store = () => getStore({ name: storeName, consistency: 'strong' });
 
 export async function read(key, fallback) {
   const data = await store().get(key, { type: 'json' });
@@ -36,11 +45,6 @@ export async function loadExercises() {
     Object.keys(current.exercises).length ? current : { exercises: { ...STARTING_EXERCISES } }
   ));
   return seeded.exercises;
-}
-
-export async function hasLoggedSets(personId) {
-  const { blobs } = await store().list({ prefix: `logs/${personId}/` });
-  return blobs.length > 0;
 }
 
 export const blocksKey = personId => `blocks/${personId}`;

@@ -108,7 +108,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **No offline mode** (decided 2026-10-26: gym signal is fine, and on-device storage risks stale data). If a save fails, the set stays unticked with "Not saved. Check your connection and tap ✓ again", and the typed numbers stay on screen.
 - **Opening a workout changes nothing.** It only becomes "in progress" when the first set is ticked. Unticking or deleting every set puts it back to "not started", so an accidental tap never marks anything.
 - **Everything stays editable until the block is completed:** sets, notes and extras, on any day of the block. Only completed (past) blocks are read-only. Each workout has a **"Trained on" date**: today by default, or the day its first set was logged. Sets ticked later keep that date, and anyone can change it (for example when catching up the next day).
-- **Unsaved drafts:** numbers typed into a set but not ticked are kept while the page is open, including when moving between screens, with a "Not saved. Tap ✓" hint. They aren't stored on the device or the server, so closing the browser loses them. Drafts never count as history.
+- **Unsaved drafts:** numbers typed into a set but not ticked stay on the workout page with a "Not saved. Tap ✓" hint. Leaving the workout with any asks first: "Save and leave", "Leave without saving" or "Stay". They aren't stored on the device or the server, so closing the browser loses them. Drafts never count as history.
 - **Save on moving on:** when the cursor moves from one set's boxes into a *different* set's boxes (by tapping or the keyboard's "next" key), the set just left is saved if its numbers are complete. Moving between boxes of the same set, leaving the page, or incomplete numbers don't save. The row turns green with a "Saved" message, and it can be unticked. Known risk: typing a later set's numbers in advance and then tapping back would save that later set early.
 - **Auto-tick:** ticking any later set in the workout, including in a later exercise or an extra, also saves earlier sets that have complete typed numbers but no tick. A message lists them ("Also saved: Back Squat set 2"), and they can be unticked. Confirmed 2026-10-26.
 - **History counts as soon as a set is ticked**, whether or not the workout is ever finished. "Last" shows the previous workout. For an extra that's also in today's plan, it shows "Earlier in this workout" instead.
@@ -144,11 +144,16 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Build progress
 
-- **Stage 1 (login and admin basics): built 2026-10-26 on the `training-stage-1` branch.** It was tested locally with `netlify dev` (API checks plus a scripted run in headless Edge). It's waiting for a Deploy Preview test, then a merge.
-  - Netlify settings needed: `TRAINING_ADMIN_PASSWORD` and `TRAINING_SESSION_SECRET`.
+- **Stage 1 (login and admin basics): live since 2026-10-26** (pull request #1).
+  - Netlify settings: `TRAINING_ADMIN_PASSWORD` and `TRAINING_SESSION_SECRET`, both secret, for the Production and Deploy Previews contexts.
   - Local testing: put test values for both in `.env.development` (git-ignored). `netlify dev` doesn't pass command-line environment variables to Edge Functions.
-  - The training Blobs store is shared by previews and the live site until stage 2.
+- **Stage 2 (logging workouts): built 2026-10-26 on the `training-stage-2` branch**, tested locally (API checks plus a scripted run in headless Edge), and waiting for a Deploy Preview test.
+  - Dashboard tiles open the workout screen at `/training/workout/`, with everything in the "Workout screen" section above.
+  - Adding a new exercise from inside the block builder's picker.
+  - Each trained workout keeps a snapshot of its planned exercises and sets.
+  - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
+  - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
 ## Next step
 
-The admin block builder, People and Exercise list screens are now in the mockup (version 11). Next: Nick tries the admin flow, then the real build starts, in the stages agreed (login and admin basics first). Clickable mockup (made-up data, private to Nick's claude.ai account): https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV. Nick is trying it out, and changes go into this doc as they're agreed.
+Nick tests stage 2 on its Deploy Preview, then merges it. After that come stage 3 (history) and stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.

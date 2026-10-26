@@ -5,7 +5,7 @@ import { STARTING_EXERCISES } from '../lib/training/exercises.js';
 const TYPES = ['weight', 'body', 'timed', 'band'];
 const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-export default async (req) => handle(async () => {
+export default async (req, context) => handle(async () => {
   if (req.method === 'GET') {
     const user = await currentUser(req);
     if (user instanceof Response) return user;
@@ -21,12 +21,14 @@ export default async (req) => handle(async () => {
   if (!TYPES.includes(input.type)) return fail(400, 'Choose a type.');
 
   await loadExercises();
+  let id;
   const data = await update('exercises', () => ({ exercises: { ...STARTING_EXERCISES } }), current => {
     if (Object.values(current.exercises).some(x => norm(x.name) === norm(name))) throw new UserError(409, `${name} is already on the list.`);
-    current.exercises[slug(name, current.exercises)] = { name, type: input.type };
+    id = slug(name, current.exercises);
+    current.exercises[id] = { name, type: input.type };
     return current;
   });
-  return json({ exercises: data.exercises, message: `${name} added.` });
-});
+  return json({ exercises: data.exercises, id, message: `${name} added.` });
+}, context);
 
 export const config = { path: '/api/training/exercises' };
