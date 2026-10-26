@@ -80,8 +80,8 @@ Groups are only for reading this list. The app doesn't group exercises.
 | Hanging Leg Raise | Bodyweight |
 | Hanging Knee Raise | Bodyweight |
 | Ab Wheel Rollout | Bodyweight |
-| Barbell Rollout | Weight (to confirm) |
-| Decline Bench Sit-Up | Weight (to confirm) |
+| Barbell Rollout | Weight |
+| Decline Bench Sit-Up | Weight |
 | Plank | Timed |
-| Dish Hold | Bodyweight (to confirm) |
-| Superman Hold | Bodyweight (to confirm) |
+| Dish Hold | Timed |
+| Superman Hold | Timed |
