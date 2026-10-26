@@ -1,14 +1,15 @@
 import { adminUser, body, currentUser, fail, handle, json, settings, UserError } from '../lib/training/http.js';
 import { checkPassword, hashPassword, sameSecret } from '../lib/training/passwords.js';
-import { blocksKey, loadBlocks, slug, store, update } from '../lib/training/store.js';
+import { blocksKey, hasLoggedSets, slug, store, update } from '../lib/training/store.js';
 
-// Everyone sees names (for browsing each other's history). Only the admin sees who's paused.
-const listFor = (people, isAdmin) => Object.entries(people).map(([id, p]) => ({
+// Everyone sees names (for browsing each other's history). Only the admin sees who's paused
+// and who has history, which decides whether they can be removed.
+const listFor = (people, isAdmin) => Promise.all(Object.entries(people).map(async ([id, p]) => ({
   id,
   name: p.name,
   admin: !!p.admin,
-  ...(isAdmin ? { paused: !!p.paused } : {}),
-}));
+  ...(isAdmin ? { paused: !!p.paused, hasHistory: await hasLoggedSets(id) } : {}),
+})));
 
 async function checkPasswordFree(people, password, exceptId) {
   if (password.length < 4) throw new UserError(400, 'Use at least 4 characters.');
@@ -28,7 +29,7 @@ export default async (req) => handle(async () => {
   if (req.method === 'GET') {
     const user = await currentUser(req);
     if (user instanceof Response) return user;
-    return json({ people: listFor(user.people, !!user.person.admin) });
+    return json({ people: await listFor(user.people, !!user.person.admin) });
   }
   if (req.method !== 'POST') return fail(405, 'Use GET or POST.');
 
@@ -39,10 +40,9 @@ export default async (req) => handle(async () => {
   const password = String(input.password || '').trim();
   let message = '';
 
-  // Only someone who's never had a block started can be removed, so no training history is ever lost.
-  if (input.action === 'remove') {
-    const blocks = await loadBlocks(input.id);
-    if (blocks.some(b => b.status !== 'queued')) return fail(409, 'They\'ve already started a block, so they can only be paused.');
+  // Only someone with no logged sets can be removed, so no training history is ever lost.
+  if (input.action === 'remove' && await hasLoggedSets(input.id)) {
+    return fail(409, 'They have logged sets, so they can only be paused.');
   }
 
   const data = await update('people', () => ({ people: {} }), async current => {
@@ -79,7 +79,7 @@ export default async (req) => handle(async () => {
   });
   if (input.action === 'remove') await store().delete(blocksKey(input.id));
 
-  return json({ people: listFor(data.people, true), message });
+  return json({ people: await listFor(data.people, true), message });
 });
 
 export const config = { path: '/api/training/people' };

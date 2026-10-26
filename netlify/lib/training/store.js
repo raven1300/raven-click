@@ -3,6 +3,7 @@
 //   exercises       { exercises: { [id]: { name, type } } }
 //   blocks/<person> { blocks: [ { num, status, plan, workouts, notes, createdAt, startedAt?, completedAt? } ] }
 //   lockouts/<ip>   { fails, until }
+//   logs/<person>/… logged sets (stage 2). Anything under this prefix counts as training history.
 import { getStore } from '@netlify/blobs';
 import { STARTING_EXERCISES } from './exercises.js';
 
@@ -35,6 +36,11 @@ export async function loadExercises() {
     Object.keys(current.exercises).length ? current : { exercises: { ...STARTING_EXERCISES } }
   ));
   return seeded.exercises;
+}
+
+export async function hasLoggedSets(personId) {
+  const { blobs } = await store().list({ prefix: `logs/${personId}/` });
+  return blobs.length > 0;
 }
 
 export const blocksKey = personId => `blocks/${personId}`;

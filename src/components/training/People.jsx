@@ -165,8 +165,8 @@ function PeopleBody() {
               <div class="split">
                 <button class="btn ghost" onClick={() => setSheet({ type: 'person', mode: 'reset', person })}>Reset password</button>
                 <div class="row">
-                  {list.every(b => b.status === 'queued') && (
-                    <button class="btn ghost danger" onClick={() => confirm(`Remove ${person.name}?`, `They haven't started a block, so no training is lost.${q ? ` Their queued Block ${q.num} is deleted too.` : ''} Their password stops working.`, 'Remove', () => api('people', { method: 'POST', body: { action: 'remove', id: person.id } }).then(d => done(d.message)))}>Remove</button>
+                  {!person.hasHistory && (
+                    <button class="btn ghost danger" onClick={() => confirm(`Remove ${person.name}?`, `They have no logged sets, so no training history is lost.${list.length ? ` Their ${list.length === 1 ? 'block is' : `${list.length} blocks are`} deleted too.` : ''} Their password stops working.`, 'Remove', () => api('people', { method: 'POST', body: { action: 'remove', id: person.id } }).then(d => done(d.message)))}>Remove</button>
                   )}
                   <button class="btn ghost" onClick={() => api('people', { method: 'POST', body: { action: 'pause', id: person.id, paused: !person.paused } }).then(d => done(d.message)).catch(err => toast(err.message))}>{person.paused ? 'Unpause' : 'Pause'}</button>
                 </div>
