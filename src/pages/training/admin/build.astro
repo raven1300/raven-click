@@ -1,0 +1,7 @@
+---
+import TrainingLayout from '../../../layouts/training/TrainingLayout.astro';
+import BlockBuilder from '../../../components/training/BlockBuilder.jsx';
+---
+<TrainingLayout pageTitle="Build a block">
+  <BlockBuilder client:only="preact" />
+</TrainingLayout>

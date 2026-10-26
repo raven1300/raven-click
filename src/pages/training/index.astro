@@ -1,8 +1,7 @@
 ---
 import TrainingLayout from '../../layouts/training/TrainingLayout.astro';
+import Dashboard from '../../components/training/Dashboard.jsx';
 ---
 <TrainingLayout pageTitle="Training">
-  <div class="training-placeholder">
-    <p>Coming soon: programs, a weekly schedule and a log of every session.</p>
-  </div>
+  <Dashboard client:only="preact" />
 </TrainingLayout>
