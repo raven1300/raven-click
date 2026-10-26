@@ -267,6 +267,7 @@ function WorkoutBody({ me }) {
       {view.plan.map(it => exerciseCard(it.ex, it.sets, false))}
       {(session?.extras || []).map(e => exerciseCard(e.ex, e.sets, true))}
       {canEdit && <button class="add-dashed" onClick={() => setSheet({ type: 'extra' })}>+ Add exercise</button>}
+      {canEdit && session && <button class="btn ghost danger" style={{ alignSelf: 'center' }} onClick={() => setSheet({ type: 'clear' })}>Clear this workout</button>}
 
       <div class="finishbar">
         <div class="finishbar-inner">
@@ -278,6 +279,25 @@ function WorkoutBody({ me }) {
         </div>
       </div>
 
+      {sheet?.type === 'clear' && session && (() => {
+        const parts = [];
+        if (session.sets.length) parts.push(`${session.sets.length} set${session.sets.length > 1 ? 's' : ''}`);
+        const noteCount = Object.keys(session.notes).length;
+        if (noteCount) parts.push(`${noteCount} note${noteCount > 1 ? 's' : ''}`);
+        if (session.extras.length) parts.push(`${session.extras.length} extra exercise${session.extras.length > 1 ? 's' : ''}`);
+        return (
+          <Sheet title={`Clear ${view.workout.name}, week ${view.week}?`} onClose={() => setSheet(null)}>
+            <p style={{ margin: 0 }}>This removes {parts.length ? parts.join(', ') : 'everything logged here'}, and the tile goes back to not started. Your block stays the same, so you can log this workout again later.</p>
+            <div class="row">
+              <button class="btn primary" onClick={() => post('clear').then(() => {
+                setDrafts({}); setRemoved({}); setErrors({}); setNotes({}); setOpenNotes({});
+                setSheet(null); toast('Workout cleared');
+              }).catch(err => toast(err.message))}>Clear workout</button>
+              <button class="btn" onClick={() => setSheet(null)}>Cancel</button>
+            </div>
+          </Sheet>
+        );
+      })()}
       {sheet?.type === 'finish' && (
         <Sheet title="Finish anyway?" onClose={() => setSheet(null)}>
           <p style={{ margin: 0 }}>{loggedCount} of {total} sets logged. The empty sets stay empty and the tile shows it as finished early. You can still fill them in later.</p>
