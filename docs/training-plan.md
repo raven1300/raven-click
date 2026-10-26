@@ -37,7 +37,7 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 
 Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are in `docs/design-screenshots/`. That folder is local only (git-ignored), because the repo is public.
 
-**Look: Neon** (chosen 2026-10-26 over Silver & Red and the original blue): always dark, a deep night-purple background with a faint pink and cyan grid. **Cyan** means in progress and active controls, **hot pink with a glow** means done, and **acid yellow** means finished early. Fonts are **Orbitron** for headings and **Exo 2** for text and numbers. The shared raven.click header stays charcoal. Icons come from the Lucide line-icon set.
+**Look: Neon** (chosen 2026-10-26 over Silver & Red and the original blue): always dark, a deep night-purple background with a faint pink and cyan grid. **Acid green** means in progress, **hot pink with a glow** means done, and **cyan** means finished early. Cyan is also used for buttons and other active controls. Fonts are **Orbitron** for headings and **Exo 2** for text and numbers. The shared raven.click header stays charcoal. Icons come from the Lucide line-icon set.
 
 **Dropped:** the weekly drag-and-drop schedule (people arrange days outside the app), the stopwatch, and tempo and intensity.
 
