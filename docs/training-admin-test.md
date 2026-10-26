@@ -62,4 +62,6 @@ A step-by-step check of the admin side of `/training`, to run on the live site a
 
 - [ ] **Pause** the test person. In their window they see "Your access is paused. Ask Nick."
 - [ ] Unpause them, and they can log in again.
+- [ ] **Remove** a test person who has never had a block started. They disappear, and their password stops working.
+- [ ] Check that someone whose block has been started shows no Remove button, only Pause.
 - [ ] Remove or pause the test person when you've finished testing.

@@ -1,6 +1,6 @@
 import { adminUser, body, currentUser, fail, handle, json, settings, UserError } from '../lib/training/http.js';
 import { checkPassword, hashPassword, sameSecret } from '../lib/training/passwords.js';
-import { slug, update } from '../lib/training/store.js';
+import { blocksKey, loadBlocks, slug, store, update } from '../lib/training/store.js';
 
 // Everyone sees names (for browsing each other's history). Only the admin sees who's paused.
 const listFor = (people, isAdmin) => Object.entries(people).map(([id, p]) => ({
@@ -39,6 +39,12 @@ export default async (req) => handle(async () => {
   const password = String(input.password || '').trim();
   let message = '';
 
+  // Only someone who's never had a block started can be removed, so no training history is ever lost.
+  if (input.action === 'remove') {
+    const blocks = await loadBlocks(input.id);
+    if (blocks.some(b => b.status !== 'queued')) return fail(409, 'They\'ve already started a block, so they can only be paused.');
+  }
+
   const data = await update('people', () => ({ people: {} }), async current => {
     const people = current.people;
     const target = input.id ? people[input.id] : null;
@@ -62,11 +68,16 @@ export default async (req) => handle(async () => {
       if (target.admin) throw new UserError(400, 'You can\'t pause yourself.');
       target.paused = !!input.paused;
       message = `${target.name} is ${target.paused ? 'paused' : 'back on'}.`;
+    } else if (input.action === 'remove') {
+      if (target.admin) throw new UserError(400, 'You can\'t remove yourself.');
+      message = `${target.name} removed.`;
+      delete people[input.id];
     } else {
       throw new UserError(400, 'Unknown action.');
     }
     return current;
   });
+  if (input.action === 'remove') await store().delete(blocksKey(input.id));
 
   return json({ people: listFor(data.people, true), message });
 });
