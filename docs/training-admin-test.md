@@ -73,6 +73,7 @@ Run these as the test person, on a phone, against a running block.
 - [ ] **+ Add exercise** adds an extra with 1 set. **+ Set** and **− Set** work, and the extra doesn't change the tile's count.
 - [ ] Press the back link with newly typed numbers. It lists the sets and asks "Save them, then leave", "Discard them and leave" or "Stay".
 - [ ] **Finish workout** with sets missing: the tile shows "finished early" with the count and date. **Undo finish** reverses it.
+- [ ] **Clear this workout** on a workout with sets, a note and an extra. The confirmation counts them, and afterwards the workout and its tile are back to not started.
 - [ ] Log every planned set. The tile turns pink with the date, without pressing Finish.
 - [ ] Open the same exercise the following week. "Last" shows this week's numbers.
 - [ ] As admin, complete the block while a workout is in progress. That tile shows finished early. **Reopen** puts it back to in progress.

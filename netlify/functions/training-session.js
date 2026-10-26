@@ -124,6 +124,10 @@ export default async (req, context) => handle(async () => {
     } else if (input.action === 'date') {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(String(input.date)) || Number.isNaN(Date.parse(input.date))) throw new UserError(400, 'That isn\'t a valid date.');
       session.date = input.date;
+    } else if (input.action === 'clear') {
+      // Empties the workout; the check below then removes it, so the tile goes back to "not started".
+      Object.assign(session, { sets: [], extras: [], notes: {}, finished: false });
+      delete session.autoFinished;
     } else if (input.action === 'finish') {
       session.finished = true;
       delete session.autoFinished;
