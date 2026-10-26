@@ -59,19 +59,24 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **Copy block:** copy any block from any person to one or more people. **Only the structure is copied** (workouts, exercises and sets), never logs. It becomes each person's next block number and **is queued**, starting when their current block is completed. Each copy can then be edited separately.
 - **Complete block:** Nick, as admin, completes blocks for one person or for everyone, at the end of week 12 or earlier (for example to start a queued block now).
 - **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them.
-- **Past blocks:** listed newest first, grouped by year. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
+- **Past blocks:** listed newest first, grouped by year in collapsible sections, with only the latest year open. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
 
 **Dashboard (after PIN login)**
 - The whole current block is shown as one compact grid: **phase headings** ("Phase 1 · 10 reps"), then **12 week rows**, each with one small tile per workout (name only). Nothing is collapsed and there's no "current week". The colours show what's done.
-- **Tile states:** not started; in progress (some sets logged, for example "4/10"); done; done (incomplete, finished with sets empty).
+- **Tile states:**
+  - **Not started.**
+  - **In progress:** some sets logged and Finish not pressed, for example "4/10".
+  - **Done:** every set logged. It turns done automatically, with no Finish needed.
+  - **Finished early:** Finish was pressed with sets still empty.
 - **History** opens from the dashboard without starting a workout. It lists every exercise the person has logged, with search. Other people's history can be browsed too.
 
 **Workout screen**
 - One scrolling list of exercises. Each exercise shows its target (weight only), last time's numbers, and a row per set. Set rows are pre-filled with last time's numbers, so a matching set takes one tap (✓).
 - **Each set saves the moment it's ticked.** Leaving the page loses nothing, and there's no Cancel button.
 - **Opening a workout changes nothing.** It only becomes "in progress" when the first set is ticked. Unticking or deleting every set puts it back to "not started", so an accidental tap never marks anything.
-- **Finish workout** is always at the bottom. With sets still empty, it asks "6 of 10 sets logged. Finish anyway?" A yes marks it done (incomplete). Finished workouts can be reopened.
-- **+ Add exercise** (anyone): pick an extra exercise from the list for **that day only**, marked as an extra. It doesn't change the block and doesn't count towards the tile's state. History is kept, so re-adding it next week shows last time's numbers straight away.
+- **Everything stays editable until the block is completed:** sets, notes and extras, on any day of the block. Only completed (past) blocks are read-only. Sets ticked later keep the workout's date, meaning the day its first set was logged.
+- **Finish workout** sits at the bottom and is only needed when stopping with sets still empty. It asks "6 of 10 sets logged. Finish anyway?", and a yes marks the workout **finished early**. The empty sets can still be filled in later, and "Undo finish" reverses it. When every set is logged, the bottom bar shows "All sets logged" instead.
+- **+ Add exercise** (anyone): pick an extra exercise from the list for **that day only**, marked as an extra. It starts with **1 set**. "+ Set" adds one, and "− Set" removes the last unticked set (or removes the exercise when only one empty set is left). It doesn't change the block and doesn't count towards the tile's state. History is kept, so re-adding it next week shows last time's numbers straight away.
 - One note per exercise, hidden behind "+ note", and a "History" link per exercise.
 
 **History (per exercise)**
@@ -101,4 +106,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-All planning questions were answered by 2026-10-26. Next: a clickable mockup of the dashboard, workout screen and history, using made-up data.
+All planning questions were answered by 2026-10-26. Clickable mockup (made-up data, private to Nick's claude.ai account): https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV. Nick is trying it out, and changes go into this doc as they're agreed.
