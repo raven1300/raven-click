@@ -72,6 +72,11 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
 - **Adding people (admin):** "+ Add person" on the People screen takes a name and a password. The new person has no block until Nick builds or copies one and presses Start, and they always start at Block 1. "Reset password" sets a new one. Nick tells people their passwords himself, and friends can't change their own (could be added later).
 - **Starting exercise list:** filled in with the exercises Nick actually uses (names to be confirmed by Nick), rather than empty. free-exercise-db is only for optional pictures and names later.
+- **Tidying the exercise list (real build only, not in the mockup; agreed 2026-10-26):**
+  - **Usage shown:** each exercise shows how much it's used, for example "Back Squat · 214 sets · Nick, Sam, Jess · in 3 blocks", so similar entries are easy to compare.
+  - **Delete:** only allowed for exercises that have never been used (no logged sets and not in any block).
+  - **Merge:** fold one exercise into another. All its history moves across, blocks using it switch over, and the duplicate disappears.
+  - **Hide:** for retired exercises that have history. They're removed from the pickers, but their history stays visible. They can be unhidden.
 - **Exercise list screen (admin):** search, plus "Add an exercise" with name and type. While typing, it suggests close matches ("Did you mean Back Squat?") so duplicates aren't created. Rename and merge come in the real build.
 - **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them.
 - **Past blocks:** listed newest first, grouped by year in collapsible sections, with only the latest year open. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
