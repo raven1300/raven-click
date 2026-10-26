@@ -1,6 +1,6 @@
 # Training record — planning snapshot
 
-Last updated 2026-10-25. Training itself isn't built yet; access is decided. This is where planning stopped, plus the questions still to answer.
+Last updated 2026-10-26. Training itself isn't built yet. The design below is agreed.
 
 ## To do (Nick)
 
@@ -35,26 +35,54 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 
 ## How it works
 
-**Program (per person)**
-- A program runs about 12 weeks and has 4 lifting days (Day A–D, or named).
-- Each day has a list of exercises.
+Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are in `docs/design-screenshots/`. That folder is local only (git-ignored), because the repo is public.
 
-**Weekly schedule (Nick only)**
-- Drag the 4 days onto Mon–Sun for the current week. Must work by touch on a phone.
-- Tap a scheduled day to see its exercises. Tap an exercise to log it.
+**Dropped:** the weekly drag-and-drop schedule (people arrange days outside the app), the stopwatch, and tempo and intensity.
 
-**Logging an exercise**
-- Shows sets and reps, and records what was done plus notes. Exact details to come (see the questions below).
+**Exercise list (shared catalogue, managed by Nick)**
+- Each exercise has a hidden ID, a name and a type. **History attaches to the exercise ID**, not to blocks or wording.
+- Exercises are always **picked from the list**, never typed into a block. Adding a new name warns "Did you mean …?". Duplicates can be **merged**, which joins their histories. Renaming keeps history.
+- Removing an exercise from a block keeps its history. Adding it back later picks the history up again. Deliberate variants (for example "Pause Squat") are separate entries.
+- Sharing the list only shares names. Each person's history and blocks are their own.
+- **Types:**
+  - **Weight:** reps × kg. Only weight exercises follow the phase target.
+  - **Bodyweight:** reps only, no target.
+  - **Timed:** seconds, no target.
+  - **Band:** a free-text band note (for example "red", "no band") plus reps, no target.
+  - Exercises without a target show last time's numbers and history for reference.
+- **Pictures (later):** each exercise can optionally have a picture. It's either linked from free-exercise-db (open source, about 800 exercises; check the licence first) and copied once into our own storage, or uploaded by Nick. No live lookups during workouts. Avoid copyrighted web images.
 
-**History**
-- Viewed on the site: past sessions and how each exercise has progressed.
+**Blocks (per person, built by Nick)**
+- Training runs in **blocks** numbered from 1 per person. A new friend always starts at Block 1. Each block is 12 weeks: **3 phases of 4 weeks**, with targets of **10, 8 and 6 reps** for weight exercises. There are no rep ranges.
+- A block has its own workouts (for example 3 for friends and 4 for Nick). Each workout lists exercises from the list, each with a number of sets.
+- Every block is fully independent. Nothing links one person's block to another's.
+- **Copy block:** copy any block from any person to one or more people. **Only the structure is copied** (workouts, exercises and sets), never logs. It becomes each person's next block number and **is queued**, starting when their current block is completed. Each copy can then be edited separately.
+- **Complete block:** Nick, as admin, completes blocks for one person or for everyone, at the end of week 12 or earlier (for example to start a queued block now).
+- **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them.
+- **Past blocks:** listed newest first, grouped by year. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
+
+**Dashboard (after PIN login)**
+- The whole current block is shown as one compact grid: **phase headings** ("Phase 1 · 10 reps"), then **12 week rows**, each with one small tile per workout (name only). Nothing is collapsed and there's no "current week". The colours show what's done.
+- **Tile states:** not started; in progress (some sets logged, for example "4/10"); done; done (incomplete, finished with sets empty).
+- **History** opens from the dashboard without starting a workout. It lists every exercise the person has logged, with search. Other people's history can be browsed too.
+
+**Workout screen**
+- One scrolling list of exercises. Each exercise shows its target (weight only), last time's numbers, and a row per set. Set rows are pre-filled with last time's numbers, so a matching set takes one tap (✓).
+- **Each set saves the moment it's ticked.** Leaving the page loses nothing, and there's no Cancel button.
+- **Opening a workout changes nothing.** It only becomes "in progress" when the first set is ticked. Unticking or deleting every set puts it back to "not started", so an accidental tap never marks anything.
+- **Finish workout** is always at the bottom. With sets still empty, it asks "6 of 10 sets logged. Finish anyway?" A yes marks it done (incomplete). Finished workouts can be reopened.
+- **+ Add exercise** (anyone): pick an extra exercise from the list for **that day only**, marked as an extra. It doesn't change the block and doesn't count towards the tile's state. History is kept, so re-adding it next week shows last time's numbers straight away.
+- One note per exercise, hidden behind "+ note", and a "History" link per exercise.
+
+**History (per exercise)**
+- A Results tab (by date, then sets, reps and weight) and a Chart tab, with personal bests marked, like the current app. It spans all blocks.
 - An "Export to CSV" button acts as a backup that opens in Google Sheets or Excel.
 
 **Access (decided 2026-10-25)**
 - The whole of `/training` is behind a PIN. A Netlify Edge Function checks for a valid login before any training page loads. Recipes and the landing page stay public.
 - **No accounts.** No sign-up, emails or password resets.
 - **Personal PINs:** each friend has their own PIN, and Nick sets them up on a "manage people" screen. The PIN identifies the person, so there's no name dropdown.
-- **Admin PIN:** Nick has an admin PIN that also unlocks admin-only features: the weekly schedule, managing people, editing programs and switching friend access on or off. The server refuses these actions for anyone who isn't admin, as well as hiding them.
+- **Admin PIN:** Nick has an admin PIN that also unlocks admin-only features: managing the exercise list, building, copying and completing blocks, managing people and switching friend access on or off. The server refuses these actions for anyone who isn't admin, as well as hiding them.
 - **Staying logged in:** a correct PIN gives the device a signed cookie that records who the person is and whether they're admin. It can't be faked.
 - **Controlling access:** Nick can pause or remove one friend, or turn all friend access off with one switch.
 - **Guessing:** a short lockout after several wrong PIN attempts.
@@ -66,34 +94,11 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 - **Logging for someone else** is a deliberate step ("Log for someone else", then pick the person). A banner ("Logging for **Sam**") stays on screen with a button to switch back, and it switches back on its own when you leave the session. This covers a friend whose phone is flat or left behind.
 - **Every entry records who typed it** (for example "entered by Nick for Sam"), and the person it belongs to sees that in their history.
 - **Editing and deleting** an entry is allowed for the person who entered it, the person it belongs to, and the admin (Nick).
-- Friends don't need the schedule. They open the site, record their numbers, and see them next time.
 
 **Storage**
 - Netlify Blobs: one training store holding everyone's data, kept per person.
 - Google Sheets was considered and turned down, because seeing the data on the site is enough.
 
-## Questions to answer
+## Next step
 
-### Exercise screen
-1. Do you set **targets** in the program (for example 4 sets × 8 reps @ 60kg), or just log what you actually did?
-2. Do you log **each set separately** (set 1: 10 × 60kg, set 2: 8 × 62.5kg), or one entry per exercise?
-3. Where do **notes** go: per set, per exercise, per session, or a mix?
-4. Any extras? For example rest timer, RPE / how hard it felt, **last time's numbers shown next to today's**, or a "done" tick per exercise.
-5. Weight in **kg** only, or does it need lbs too? Any bodyweight or timed exercises (planks, pull-ups, cardio) that don't fit "reps × weight"?
-
-### Program and schedule
-6. What happens at the end of a 12-week program: start a fresh one and keep the old history?
-7. If a scheduled day gets missed, should it roll over, or just stay unticked?
-8. Do you ever do the same day twice in a week, or skip one?
-
-### Friends
-9. Do friends have **their own 4-day programs** (set up like yours), or do they just **pick or type an exercise** and log it freeform?
-10. Could a friend follow **your program** (same days and exercises) while logging their own numbers?
-11. ~~Who adds people?~~ **Answered:** only Nick, on the "manage people" screen, which also sets each person's PIN.
-12. Showing the schedule only for you is easy. Should friends be able to switch it on later, or never?
-
-### History
-13. What matters most to see: a list of past sessions, one exercise's progress over time (for example a chart of bench press weight), personal bests, or all of these?
-
-### Access
-14. ~~One PIN or an admin PIN?~~ **Answered:** personal PINs plus an admin PIN. See "Access" above.
+All planning questions were answered by 2026-10-26. Next: a clickable mockup of the dashboard, workout screen and history, using made-up data.
