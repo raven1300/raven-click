@@ -66,12 +66,12 @@ Run these as the test person, on a phone, against a running block.
 - [ ] Tap a tile. The workout opens with the right week, phase and rep target, and empty set boxes. "Last" shows earlier numbers, or "First time doing this one".
 - [ ] Type a set's numbers, then tap into the next set's boxes. The first set turns pink and says "Saved", and the keyboard stays up.
 - [ ] Type a set without ticking, then tick a later set. Both save ("Also saved…").
-- [ ] Untick a set. Its numbers come back with "Not saved. Tap ✓".
+- [ ] Untick a set. Its numbers stay with "Removed. Tap ✓ to save it again". Moving to another set, ticking a later set, or leaving doesn't save it again, and leaving doesn't ask about it. Re-ticking it saves it.
 - [ ] Tick with a box empty. It asks for the missing number.
 - [ ] Try timed (seconds) and band (band + reps) exercises. Leaving the band empty saves "No band".
 - [ ] Add a note, change the "Trained on" date, and reload. Both are kept.
 - [ ] **+ Add exercise** adds an extra with 1 set. **+ Set** and **− Set** work, and the extra doesn't change the tile's count.
-- [ ] Press the back link with unsaved numbers. It asks "Save and leave", "Leave without saving" or "Stay".
+- [ ] Press the back link with newly typed numbers. It lists the sets and asks "Save them, then leave", "Discard them and leave" or "Stay".
 - [ ] **Finish workout** with sets missing: the tile shows "finished early" with the count and date. **Undo finish** reverses it.
 - [ ] Log every planned set. The tile turns pink with the date, without pressing Finish.
 - [ ] Open the same exercise the following week. "Last" shows this week's numbers.
