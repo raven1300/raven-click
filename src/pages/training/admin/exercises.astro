@@ -1,0 +1,7 @@
+---
+import TrainingLayout from '../../../layouts/training/TrainingLayout.astro';
+import ExerciseList from '../../../components/training/ExerciseList.jsx';
+---
+<TrainingLayout pageTitle="Exercise list">
+  <ExerciseList client:only="preact" />
+</TrainingLayout>
