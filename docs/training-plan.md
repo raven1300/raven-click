@@ -63,6 +63,14 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **Copy block:** copy any block from any person to one or more people. **Only the structure is copied** (workouts, exercises and sets), never logs. It becomes each person's next block number and **is queued** until Nick starts it. Each copy can then be edited separately.
 - **Start block:** a queued block waits until Nick presses "Start block", for one person or several at once. The block's start date is the day it's started. Completing a block never starts the next one automatically.
 - **Complete block:** Nick, as admin, completes blocks for one person or for everyone, at the end of the block or earlier. Any workout still in progress becomes "finished early". Workouts nobody started stay "not started". Ticked sets stay in history either way.
+- **Block builder (admin, mocked 2026-10-26):** "Start from" a blank block or a copy of any person's block (running, queued or past). Then:
+  - **Phase plan:** one row per phase, with weeks and an optional rep target, "+ Add phase", and a "Use Standard" button.
+  - **Workouts:** each has a name and an icon button that opens the icon picker. Exercises come from the exercise picker and get 2 sets by default, with a − / + set stepper, ↑ / ↓ to reorder and × to remove. There are "+ Add workout" and "Remove workout" buttons.
+  - **Who gets this block:** a checkbox per person, showing the Block number each will get. People who already have a queued block are greyed out.
+  - **Saving** checks that every phase has weeks, every workout has a name and at least one exercise, and at least one person is chosen.
+  - A queued block can be edited later from People.
+- **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
+- **Exercise list screen (admin):** search, plus "Add an exercise" with name and type. While typing, it suggests close matches ("Did you mean Back Squat?") so duplicates aren't created. Rename and merge come in the real build.
 - **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them.
 - **Past blocks:** listed newest first, grouped by year in collapsible sections, with only the latest year open. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
 
@@ -118,4 +126,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-Next: a mockup of the admin block builder, in the Neon look. Clickable mockup (made-up data, private to Nick's claude.ai account): https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV. Nick is trying it out, and changes go into this doc as they're agreed.
+The admin block builder, People and Exercise list screens are now in the mockup (version 11). Next: Nick tries the admin flow, then the real build starts, in the stages agreed (login and admin basics first). Clickable mockup (made-up data, private to Nick's claude.ai account): https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV. Nick is trying it out, and changes go into this doc as they're agreed.
