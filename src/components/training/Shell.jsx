@@ -22,6 +22,7 @@ export default function Shell({ adminOnly = false, children }) {
 
   return (
     <div class="stack">
+      {me.preview && <p class="notice small">Preview data: separate from the live site, for testing only.</p>}
       {children(me)}
       <div class="split small muted">
         <span>Logged in as {me.name}</span>

@@ -1,6 +1,6 @@
 // Responses and login checks shared by the training API functions.
 import { readCookie, verifySession } from './session.js';
-import { loadPeople } from './store.js';
+import { loadPeople, useDeployContext } from './store.js';
 import { adminVersion } from './passwords.js';
 
 export const json = (data, status = 200, headers = {}) =>
@@ -54,7 +54,9 @@ export class UserError extends Error {
   }
 }
 
-export async function handle(fn) {
+// Every training function runs through this, which also picks the live or preview store.
+export async function handle(fn, context) {
+  useDeployContext(context);
   try {
     return await fn();
   } catch (err) {

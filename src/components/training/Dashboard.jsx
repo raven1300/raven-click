@@ -3,7 +3,25 @@ import { api } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, longDate } from './ui.jsx';
 
-function BlockGrid({ block }) {
+const shortDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }); };
+const STATE_LABEL = { none: 'not started', progress: 'in progress', done: 'done', incomplete: 'finished early' };
+
+function Tile({ block, week, workout, summary }) {
+  const state = summary?.state || 'none';
+  const label = state === 'done' ? `✓ ${shortDate(summary.date)}`
+    : state === 'incomplete' ? `${summary.logged}/${summary.total} · ${shortDate(summary.date)}`
+    : state === 'progress' ? `${summary.logged}/${summary.total} sets` : '';
+  const href = `/training/workout/?block=${block.num}&week=${week}&workout=${encodeURIComponent(workout.id)}`;
+  return (
+    <a class={`tile ${state}`} href={href} aria-label={`Week ${week} ${workout.name}: ${STATE_LABEL[state]}`}>
+      {state === 'progress' && <span class="fill" style={{ height: `${Math.round((summary.logged / summary.total) * 100)}%` }} />}
+      <span class="nm"><Icon name={workout.icon} />{workout.name}</span>
+      <span class="st">{label || ' '}</span>
+    </a>
+  );
+}
+
+function BlockGrid({ block, progress }) {
   const n = block.workouts.length;
   let weekNo = 0;
   return (
@@ -22,12 +40,7 @@ function BlockGrid({ block }) {
               <div class="week" key={week}>
                 <span class="wk">W{week}</span>
                 <div class="tiles" style={{ '--n': n }}>
-                  {block.workouts.map(wo => (
-                    <div class="tile" key={wo.id} aria-label={`Week ${week} ${wo.name}: not started`}>
-                      <span class="nm"><Icon name={wo.icon} />{wo.name}</span>
-                      <span class="st">&nbsp;</span>
-                    </div>
-                  ))}
+                  {block.workouts.map(wo => <Tile key={wo.id} block={block} week={week} workout={wo} summary={progress[`${week}/${wo.id}`]} />)}
                 </div>
               </div>
             ))}
@@ -83,8 +96,9 @@ function AdminPanel() {
 
 function DashboardBody({ me }) {
   const [blocks, setBlocks] = useState(null);
+  const [progress, setProgress] = useState({});
   const [error, setError] = useState('');
-  useEffect(() => { api('blocks').then(d => setBlocks(d.blocks)).catch(err => setError(err.message)); }, []);
+  useEffect(() => { api('blocks').then(d => { setBlocks(d.blocks); setProgress(d.progress || {}); }).catch(err => setError(err.message)); }, []);
 
   if (error) return <p class="error-box">{error}</p>;
   if (!blocks) return <p class="muted">Loading your block…</p>;
@@ -101,8 +115,8 @@ function DashboardBody({ me }) {
             <div class="meta">Started {longDate(running.startedAt)}</div>
             {queued && <div class="meta">Block {queued.num} is queued next.</div>}
           </div>
-          <p class="notice small">Logging your sets arrives in the next update. For now, this shows your block.</p>
-          <BlockGrid block={running} />
+          <div class="meta">{Object.values(progress).filter(s => s.state === 'done' || s.state === 'incomplete').length} of {running.workouts.length * running.plan.reduce((a, ph) => a + ph.weeks, 0)} workouts done</div>
+          <BlockGrid block={running} progress={progress} />
         </>
       ) : (
         <div>

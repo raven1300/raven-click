@@ -52,6 +52,6 @@ export default async (req, context) => handle(async () => {
   if (lock) await store().delete(lockKey);
   const token = await signSession({ pid, v: version }, config.secret);
   return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token) });
-});
+}, context);
 
 export const config = { path: '/api/training/login' };
