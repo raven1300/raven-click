@@ -135,6 +135,13 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - Netlify Blobs: one training store holding everyone's data, kept per person.
 - Google Sheets was considered and turned down, because seeing the data on the site is enough.
 
+## Build progress
+
+- **Stage 1 (login and admin basics): built 2026-10-26 on the `training-stage-1` branch.** It was tested locally with `netlify dev` (API checks plus a scripted run in headless Edge). It's waiting for a Deploy Preview test, then a merge.
+  - Netlify settings needed: `TRAINING_ADMIN_PASSWORD` and `TRAINING_SESSION_SECRET`.
+  - Local testing: put test values for both in `.env.development` (git-ignored). `netlify dev` doesn't pass command-line environment variables to Edge Functions.
+  - The training Blobs store is shared by previews and the live site until stage 2.
+
 ## Next step
 
 The admin block builder, People and Exercise list screens are now in the mockup (version 11). Next: Nick tries the admin flow, then the real build starts, in the stages agreed (login and admin basics first). Clickable mockup (made-up data, private to Nick's claude.ai account): https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV. Nick is trying it out, and changes go into this doc as they're agreed.
