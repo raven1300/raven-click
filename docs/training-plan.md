@@ -70,6 +70,9 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Saving** checks that every phase has weeks, every workout has a name and at least one exercise, and at least one person is chosen.
   - A queued block can be edited later from People.
 - **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
+- **Renaming people (admin):** "Rename" on each person's card. Names must be unique. Blocks and history belong to the person's hidden ID, so renaming changes nothing else.
+- **Deleting a queued block (admin):** "Delete" on a queued block, with a confirmation. Nothing has been logged against it, so nothing is lost, and its Block number is reused by the next block queued for that person. Running and past blocks can't be deleted, only completed.
+- **Admin test checklist:** `docs/training-admin-test.md`, to run on the live site after each build stage.
 - **Adding people (admin):** "+ Add person" on the People screen takes a name and a password. The new person has no block until Nick builds or copies one and presses Start, and they always start at Block 1. "Reset password" sets a new one. Nick tells people their passwords himself, and friends can't change their own (could be added later).
 - **Starting exercise list:** filled in with the exercises Nick actually uses (names to be confirmed by Nick), rather than empty. free-exercise-db is only for optional pictures and names later.
 - **Tidying the exercise list (real build only, not in the mockup; agreed 2026-10-26):**
