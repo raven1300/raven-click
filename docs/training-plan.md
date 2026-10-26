@@ -71,6 +71,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - A queued block can be edited later from People.
 - **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
 - **Renaming people (admin):** "Rename" on each person's card. Names must be unique. Blocks and history belong to the person's hidden ID, so renaming changes nothing else.
+- **Reopen block (admin, undo for Complete):** the person's most recent completed block can be reopened while they have no block running. It becomes their running, editable block again. Workouts that completing marked "finished early" go back to "in progress", but ones the person finished early themselves stay that way. A queued block stays queued. Completing a block never affects set history, so reopening is only about the block's grid and editability.
 - **Deleting a queued block (admin):** "Delete" on a queued block, with a confirmation. Nothing has been logged against it, so nothing is lost, and its Block number is reused by the next block queued for that person. Running and past blocks can't be deleted, only completed.
 - **Admin test checklist:** `docs/training-admin-test.md`, to run on the live site after each build stage.
 - **Adding people (admin):** "+ Add person" on the People screen takes a name and a password. The new person has no block until Nick builds or copies one and presses Start, and they always start at Block 1. "Reset password" sets a new one. Nick tells people their passwords himself, and friends can't change their own (could be added later).
@@ -81,7 +82,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Merge:** fold one exercise into another. All its history moves across, blocks using it switch over, and the duplicate disappears.
   - **Hide:** for retired exercises that have history. They're removed from the pickers, but their history stays visible. They can be unhidden.
 - **Exercise list screen (admin):** search, plus "Add an exercise" with name and type. While typing, it suggests close matches ("Did you mean Back Squat?") so duplicates aren't created. Rename and merge come in the real build.
-- **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them.
+- **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them. The "who can edit" line is worded from the viewer's side ("Only you can edit these" on Nick's own block, "You and Nick can both edit these" for a friend).
 - **Past blocks:** listed newest first, grouped by year in collapsible sections, with only the latest year open. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
 
 **Dashboard (after login)**

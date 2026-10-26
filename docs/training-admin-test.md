@@ -47,6 +47,8 @@ A step-by-step check of the admin side of `/training`, to run on the live site a
 - [ ] Press **Start**. It starts today.
 - [ ] Queue another block for the test person and press **Start**. It warns that the running block will be completed first. Confirm.
 - [ ] Press **Complete** on a running block. The card shows "No block running".
+- [ ] Press **Reopen** on that block. It's running again, and any workout that was in progress before completing is back to in progress.
+- [ ] Complete it again, start a new block, and check that **Reopen** is no longer offered for the old one.
 - [ ] (Stage 4) Build one block for **two or more people** at once, then use **Start all queued**.
 
 ## 6. Checking from the test person's side (stage 2 onwards)
