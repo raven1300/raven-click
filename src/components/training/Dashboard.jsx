@@ -78,8 +78,7 @@ function PastBlocks({ blocks }) {
 
 function AdminPanel() {
   const links = [
-    ['/training/admin/people/', 'People and blocks', 'Add people, start, complete and edit blocks'],
-    ['/training/admin/build/', 'Build a block', 'From scratch, or copied from anyone\'s block'],
+    ['/training/admin/people/', 'People and blocks', 'Add people, build, start, complete and edit blocks'],
     ['/training/admin/exercises/', 'Exercise list', 'Add exercises everyone picks from'],
   ];
   return (

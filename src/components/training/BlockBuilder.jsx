@@ -154,7 +154,7 @@ function BuilderBody({ me }) {
   return (
     <div class="stack">
       <div>
-        <a class="back" href={editing ? '/training/admin/people/' : '/training/'}>‹ {editing ? 'People' : 'My block'}</a>
+        <a class="back" href="/training/admin/people/">‹ People</a>
         <div class="eyebrow">Admin · {editing ? `Edit ${editStatus} block` : 'New block'}</div>
         <h1 class="t-title">{editing ? `${nameOf(editPerson)} · Block ${editNum}` : 'Build a block'}</h1>
       </div>

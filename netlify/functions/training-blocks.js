@@ -80,9 +80,14 @@ export default async (req, context) => handle(async () => {
       Object.assign(target, cleanBlock(input.block, await loadExercises()));
       message = `${name(id)}'s Block ${target.num} saved.`;
     } else if (input.action === 'delete') {
-      if (!queued || queued.num !== input.num) throw new UserError(409, 'Only a queued block can be deleted.');
-      blocks.splice(blocks.indexOf(queued), 1);
-      message = `Queued Block ${queued.num} deleted.`;
+      // Like editing: a queued block, or a running one with nothing logged in it.
+      const target = [queued, running].find(b => b && b.num === input.num);
+      if (!target) throw new UserError(409, 'Only a queued block, or a running one with nothing logged, can be deleted.');
+      if (target === running && await hasTraining(id, running.num)) {
+        throw new UserError(409, `Block ${running.num} has training logged, so it can't be deleted.`);
+      }
+      blocks.splice(blocks.indexOf(target), 1);
+      message = `${target === running ? 'Running' : 'Queued'} Block ${target.num} deleted.`;
     } else if (input.action === 'start') {
       if (!queued) throw new UserError(409, `${name(id)} has no queued block to start.`);
       if (running) { Object.assign(running, { status: 'completed', completedAt: today() }); completedNum = running.num; }
