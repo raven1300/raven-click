@@ -88,7 +88,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **Tidying the exercise list (real build only, not in the mockup; agreed 2026-10-26):**
   - **Usage shown:** each exercise shows how much it's used, for example "Back Squat · 214 sets · Nick, Sam, Jess · in 3 blocks", so similar entries are easy to compare.
   - **Delete:** only allowed for exercises that have never been used (no logged sets and not in any block).
-  - **Merge:** fold one exercise into another. All its history moves across, blocks using it switch over, and the duplicate disappears.
+  - **Merge:** fold one exercise into another. All its history moves across, blocks using it switch over, and the duplicate disappears. Only exercises of the same type can be merged, and a merge is refused (naming the person, block and workout) where both are planned in one workout or both are extras in one trained workout (decided 2026-10-27).
   - **Hide:** for retired exercises that have history. They're removed from the pickers, but their history stays visible. They can be unhidden.
 - **Exercise list screen (admin):** search, plus "Add an exercise" with name and type. While typing, it suggests close matches ("Did you mean Back Squat?") so duplicates aren't created. Rename and merge come in the real build.
 - **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them, on running and past blocks alike (confirmed 2026-10-27). The "who can edit" line is worded from the viewer's side ("Only you can edit these" on Nick's own block, "You and Nick can both edit these" for a friend).
@@ -123,7 +123,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 **History (per exercise)**
 - A Results tab (by date, then sets, reps and weight) and a Chart tab, with personal bests marked, like the current app. It spans all blocks.
 - **Personal bests (decided 2026-10-27):** weight exercises: the heaviest weight, with more reps breaking a tie (not an estimated one-rep max). Bodyweight: most reps. Timed: longest hold. Band: most reps, with "No band" beating any band.
-- **Export to CSV** as a backup that opens in Google Sheets or Excel. Each person can export their own data, and Nick can export everyone's.
+- **Export to CSV** as a backup that opens in Google Sheets or Excel. Each person can export their own data, and Nick can export everyone's. Built in stage 5: buttons on the History page, one row per set with date, person, block, week, workout, exercise, type, set, extra, reps, kg, seconds, band, entered by and note.
 
 **Access (decided 2026-10-25, passwords 2026-10-26)**
 - The whole of `/training` is behind a login. A Netlify Edge Function checks for a valid login before any training page loads. Recipes and the landing page stay public.
@@ -162,6 +162,9 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
   - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
+- **Stage 5 (tidying the exercise list, CSV export): in progress on branch `training-stage-5`.**
+  - Exercise list: usage per exercise, and a sheet to rename, hide or unhide, merge into another of the same type, or delete when unused. Pickers leave hidden exercises out.
+  - `/api/training/export`: CSV of your own training, or anyone's and everyone's for Nick.
 - **Stage 4 (logging for others, block notes, editing a running block): live since 2026-10-27**, after Nick worked through checklist section 6d on the Deploy Preview.
   - Log for someone else with a banner, and "Entered by" on sets in the workout and in History.
   - Block notes on the dashboard, editable by the person and Nick on running and past blocks.
@@ -175,4 +178,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-Stages 1 to 4 are live. Next is stage 5: tidying the exercise list (usage, delete, merge, hide) and CSV export, then pictures. The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
+Stages 1 to 4 are live, and stage 5 is on a Deploy Preview. After that, pictures are stage 6 (split off 2026-10-27). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.

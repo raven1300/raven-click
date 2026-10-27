@@ -52,6 +52,18 @@ function HistoryBody({ me }) {
           ))}
         </div>
       </section>
+      {(personId === me.id || me.admin) && (
+        <section class="panel">
+          <h2 class="t-h2">Export</h2>
+          <p class="small muted" style={{ margin: 0 }}>A CSV file with one row per set, as a backup. It opens in Google Sheets or Excel.</p>
+          <div class="row">
+            <a class="btn" style={{ textDecoration: 'none' }} href={`/api/training/export?person=${encodeURIComponent(personId)}`} download>
+              {personId === me.id ? 'Export my training' : `Export ${data.person.name}'s training`}
+            </a>
+            {me.admin && <a class="btn" style={{ textDecoration: 'none' }} href="/api/training/export?all=1" download>Export everyone</a>}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

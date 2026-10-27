@@ -28,7 +28,7 @@ const findLogged = (view, { ex, set, extra }) => view.session?.sets.find(s => s.
 function ExtraPicker({ exercises, taken, onPick, onClose }) {
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
-  const list = Object.entries(exercises).filter(([, x]) => !q || x.name.toLowerCase().includes(q)).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const list = Object.entries(exercises).filter(([, x]) => !x.hidden && (!q || x.name.toLowerCase().includes(q))).sort((a, b) => a[1].name.localeCompare(b[1].name));
   return (
     <Sheet title="Add an exercise" onClose={onClose}>
       <p class="small muted" style={{ margin: 0 }}>Added to today only. It won't change the block.</p>

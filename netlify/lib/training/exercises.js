@@ -1,5 +1,6 @@
 // Starting exercise list, from docs/training-exercises.md. Used once, to fill an empty store.
 // Types: weight (reps × kg), body (reps), timed (seconds), band (band + reps).
+export const TYPE_LABEL = { weight: 'Weight', body: 'Bodyweight', timed: 'Timed', band: 'Band' };
 export const STARTING_EXERCISES = {
   "barbell-back-squat": { name: "Barbell Back Squat", type: "weight" },
   "barbell-romanian-deadlift": { name: "Barbell Romanian Deadlift", type: "weight" },

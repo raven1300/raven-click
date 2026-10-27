@@ -16,9 +16,11 @@ function ExercisePicker({ exercises, taken, onPick, onAdded, onClose }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const q = query.trim().toLowerCase();
-  const list = Object.entries(exercises).filter(([, x]) => !q || x.name.toLowerCase().includes(q)).sort((a, b) => a[1].name.localeCompare(b[1].name));
-  const exact = Object.values(exercises).some(x => x.name.toLowerCase() === q);
-  const similar = similarNames(query, exercises);
+  // Hidden exercises stay out of the picker. Adding one by name says it's hidden.
+  const visible = Object.fromEntries(Object.entries(exercises).filter(([, x]) => !x.hidden));
+  const list = Object.entries(visible).filter(([, x]) => !q || x.name.toLowerCase().includes(q)).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const exact = Object.values(visible).some(x => x.name.toLowerCase() === q);
+  const similar = similarNames(query, visible);
   // Adds a brand-new exercise to the list and straight into this workout.
   const addNew = async () => {
     setBusy(true);
