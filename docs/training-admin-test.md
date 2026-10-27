@@ -135,6 +135,8 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] Try a sideways phone photo: it comes out upright. Try a screenshot or PNG: fine too.
 - [ ] **Replace picture**: the new one shows everywhere straight away (reload a workout to check). **Remove picture**: the thumbnails go.
 - [ ] Merge an exercise with a picture into one without: the kept exercise now has the picture.
+- [ ] Upload an animated GIF. The crop step says it's an animation, the thumbnail has a play badge, and tapping it plays the animation. A GIF over 4 MB is refused with a message.
+- [ ] Choose an SVG file: it's refused. Choose a very small picture: you're warned it may look blurry, but can still use it.
 - [ ] As a friend, the thumbnails show but there's no way to change them.
 
 ## 7. Friend access (stage 1)

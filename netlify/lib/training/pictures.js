@@ -1,4 +1,5 @@
-// Exercise pictures in Blobs: `pictures/<ex>/full` and `pictures/<ex>/thumb`, both JPEG.
+// Exercise pictures in Blobs: `pictures/<ex>/full` (JPEG, or an animated GIF or WebP) and
+// `pictures/<ex>/thumb` (JPEG). Each file's metadata holds its type.
 import { store } from './store.js';
 
 const SIZES = ['full', 'thumb'];
@@ -10,7 +11,7 @@ export async function deletePicture(ex) {
 // For merging: the kept exercise takes over the other's picture.
 export async function copyPicture(from, to) {
   for (const size of SIZES) {
-    const data = await store().get(`pictures/${from}/${size}`, { type: 'arrayBuffer' });
-    if (data) await store().set(`pictures/${to}/${size}`, data);
+    const found = await store().getWithMetadata(`pictures/${from}/${size}`, { type: 'arrayBuffer' });
+    if (found) await store().set(`pictures/${to}/${size}`, found.data, { metadata: found.metadata });
   }
 }

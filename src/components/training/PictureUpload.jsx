@@ -1,7 +1,16 @@
 // Choosing a picture for an exercise: the browser shrinks it, you drag a square for the thumbnail,
-// and two JPEGs are uploaded. The whole picture is kept for the full-size view.
+// and two JPEGs are uploaded. The whole picture is kept for the full-size view. An animated GIF
+// or WebP is uploaded as it is instead, with a still JPEG thumbnail from its first frame.
 import { useRef, useState } from 'preact/hooks';
 import { api } from './api.js';
+import { MAX_ANIMATION, animationType } from '../../../netlify/lib/training/animated.js';
+
+const readDataUrl = file => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = () => reject(new Error('That file couldn\'t be read.'));
+  reader.readAsDataURL(file);
+});
 
 const FULL_MAX = 1000;
 const THUMB = 300;
@@ -52,8 +61,21 @@ export function PictureButton({ label, onPicked, onError, disabled }) {
     e.currentTarget.value = '';
     if (!file) return;
     try {
-      const canvas = shrink(await loadImage(file));
-      onPicked({ canvas, preview: canvas.toDataURL('image/jpeg', 0.85) });
+      // SVGs can carry code, so they're never used.
+      if (file.type === 'image/svg+xml' || /\.svgz?$/i.test(file.name)) throw new Error('SVG pictures can\'t be used. Try a JPEG, PNG, GIF or WebP.');
+      // An animated GIF or WebP is uploaded as it is; anything else is shrunk to a JPEG.
+      const animated = animationType(new Uint8Array(await file.arrayBuffer()));
+      if (animated && file.size > MAX_ANIMATION) {
+        throw new Error(`That animation is ${(file.size / 1024 / 1024).toFixed(1)} MB. Animations can be up to 4 MB, so make it smaller (fewer frames or a smaller size) and try again.`);
+      }
+      const img = await loadImage(file);
+      const canvas = shrink(img);
+      onPicked({
+        canvas,
+        preview: canvas.toDataURL('image/jpeg', 0.85),
+        animation: animated ? await readDataUrl(file) : null,
+        small: Math.min(img.naturalWidth, img.naturalHeight) < 300 && `${img.naturalWidth} × ${img.naturalHeight}`,
+      });
     } catch (err) {
       onError(err.message);
     }
@@ -68,7 +90,7 @@ export function PictureButton({ label, onPicked, onError, disabled }) {
 
 // Drag the square to choose the thumbnail; the slider makes it smaller or bigger.
 export function CropStep({ ex, name, picked, onDone, onCancel }) {
-  const { canvas, preview } = picked;
+  const { canvas, preview, animation, small } = picked;
   const w = canvas.width, h = canvas.height, most = Math.min(w, h);
   const [crop, setCrop] = useState({ x: (w - most) / 2, y: (h - most) / 2, s: most });
   const [error, setError] = useState('');
@@ -93,7 +115,7 @@ export function CropStep({ ex, name, picked, onDone, onCancel }) {
     setError('');
     try {
       const thumb = toJpeg(canvas, crop.x, crop.y, crop.s, crop.s, THUMB, THUMB);
-      onDone(await api('picture', { method: 'POST', body: { action: 'set', ex, full: preview, thumb } }));
+      onDone(await api('picture', { method: 'POST', body: { action: 'set', ex, full: animation || preview, thumb } }));
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -102,7 +124,11 @@ export function CropStep({ ex, name, picked, onDone, onCancel }) {
 
   return (
     <div class="stack">
-      <p class="small muted" style={{ margin: 0 }}>Drag the square over the part to show in the small thumbnail. Tapping the thumbnail always shows the whole picture.</p>
+      <p class="small muted" style={{ margin: 0 }}>
+        Drag the square over the part to show in the small thumbnail. Tapping the thumbnail always shows the whole {animation ? 'animation' : 'picture'}.
+        {animation && ' This is an animation: the thumbnail is a still of its first frame, with a play badge, and it plays when tapped.'}
+      </p>
+      {small && <p class="notice small" style={{ margin: 0 }}>This picture is small ({small} pixels), so it may look blurry. You can still use it.</p>}
       {/* Tall pictures are kept short enough to fit on screen. */}
       <div class="crop" ref={box} style={{ width: `min(100%, ${Math.round((50 * w) / h)}vh)` }}>
         <img src={preview} alt={`Picture for ${name}`} draggable={false} />

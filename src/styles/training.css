@@ -248,3 +248,8 @@ a.tile { text-decoration: none; color: inherit; }
 .crop img { display: block; width: 100%; height: auto; pointer-events: none; }
 .crop-frame { position: absolute; border: 2px solid #fff; box-shadow: 0 0 0 9999px rgba(5, 2, 15, 0.6); cursor: move; touch-action: none; }
 #crop-size { width: 100%; accent-color: var(--accent); }
+.pic-thumb { position: relative; }
+.pic-play { position: absolute; right: 0.2rem; bottom: 0.2rem; display: grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 999px; background: rgba(5, 2, 15, 0.7); color: #fff; }
+.pic-play svg { width: 0.75rem; height: 0.75rem; fill: currentColor; }
+.pic-thumb.large .pic-play { width: 1.7rem; height: 1.7rem; }
+.pic-thumb.large .pic-play svg { width: 1rem; height: 1rem; }

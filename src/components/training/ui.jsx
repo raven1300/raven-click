@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   Activity, BicepsFlexed, Bike, Dumbbell, Flame, Footprints, Grab, HeartPulse,
-  Mountain, Rocket, Star, Target, Timer, Trophy, Weight, Zap,
+  Mountain, Play, Rocket, Star, Target, Timer, Trophy, Weight, Zap,
 } from 'lucide-preact';
 
 export const ICONS = {
@@ -115,14 +115,16 @@ function PictureView({ ex, x, onClose }) {
   );
 }
 
-// The thumbnail, if the exercise has a picture. Tapping it shows the whole picture.
+// The thumbnail, if the exercise has a picture. Tapping it shows the whole picture, or plays the
+// animation (marked with a play badge).
 export function Picture({ ex, x, large }) {
   const [open, setOpen] = useState(false);
   if (!x?.picture) return null;
   return (
     <>
-      <button type="button" class={`pic-thumb${large ? ' large' : ''}`} aria-label={`Show the picture of ${x.name}`} onClick={() => setOpen(true)}>
+      <button type="button" class={`pic-thumb${large ? ' large' : ''}`} aria-label={x.animated ? `Play the animation of ${x.name}` : `Show the picture of ${x.name}`} onClick={() => setOpen(true)}>
         <img src={pictureUrl(ex, x.picture, 'thumb')} alt="" loading="lazy" />
+        {x.animated && <span class="pic-play" aria-hidden="true"><Play /></span>}
       </button>
       {open && <PictureView ex={ex} x={x} onClose={() => setOpen(false)} />}
     </>
