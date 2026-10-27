@@ -1,26 +1,115 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
-import { TYPE_LABEL, similarNames, useToast } from './ui.jsx';
+import { Sheet, TYPE_LABEL, similarNames, useToast } from './ui.jsx';
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+// "214 sets · Nick, Sam · in 3 blocks", so similar entries are easy to compare.
+function usageText(u, people) {
+  if (!u) return 'Not used yet';
+  const parts = [u.sets ? plural(u.sets, 'set') : 'No sets logged'];
+  if (u.people.length) parts.push(u.people.map(id => people[id]?.name || 'Someone').join(', '));
+  if (u.blocks) parts.push(`in ${plural(u.blocks, 'block')}`);
+  return parts.join(' · ');
+}
+
+// Rename, hide, merge or delete one exercise. `confirm` is the merge or delete waiting for a yes.
+function ExerciseSheet({ id, exercises, usage, people, onDone, onClose }) {
+  const x = exercises[id];
+  const u = usage[id];
+  const [name, setName] = useState(x.name);
+  const others = Object.entries(exercises).filter(([oid, o]) => oid !== id && o.type === x.type).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const [into, setInto] = useState('');
+  const [confirm, setConfirm] = useState(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const send = async body => {
+    setBusy(true);
+    setError('');
+    try {
+      onDone(await api('exercises', { method: 'POST', body: { id, ...body } }));
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  if (confirm) {
+    const target = exercises[into];
+    return (
+      <Sheet title={confirm === 'merge' ? `Merge into ${target.name}?` : `Delete ${x.name}?`} onClose={onClose}>
+        <p style={{ margin: 0 }}>
+          {confirm === 'merge'
+            ? `All of ${x.name}'s history moves to ${target.name}, blocks using it switch to ${target.name}, and ${x.name} is removed from the list. This can't be undone.`
+            : `${x.name} has never been used, so nothing else changes.`}
+        </p>
+        {error && <p class="error-box" role="alert">{error}</p>}
+        <div class="row">
+          <button class="btn primary" disabled={busy} onClick={() => send(confirm === 'merge' ? { action: 'merge', into } : { action: 'delete' })}>{confirm === 'merge' ? 'Merge' : 'Delete'}</button>
+          <button class="btn" onClick={() => { setConfirm(null); setError(''); }}>Back</button>
+        </div>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Sheet title={x.name} onClose={onClose}>
+      <p class="small muted" style={{ margin: 0 }}>{TYPE_LABEL[x.type]} · {usageText(u, people)}{x.hidden ? ' · Hidden' : ''}</p>
+      <form class="stack" onSubmit={e => { e.preventDefault(); send({ action: 'rename', name }); }}>
+        <label class="label" for="ex-name"><span class="meta">Name</span>
+          <input id="ex-name" class="input" autocomplete="off" value={name} onInput={e => setName(e.currentTarget.value)} /></label>
+        <div class="row"><button class="btn" type="submit" disabled={busy || name.trim() === x.name}>Save name</button><span class="small muted">History stays with it.</span></div>
+      </form>
+
+      <div class="stack">
+        <label class="label" for="ex-into"><span class="meta">Merge into</span>
+          <select id="ex-into" class="select" value={into} onChange={e => setInto(e.currentTarget.value)}>
+            <option value="">Choose a {TYPE_LABEL[x.type].toLowerCase()} exercise…</option>
+            {others.map(([oid, o]) => <option key={oid} value={oid}>{o.name}{o.hidden ? ' (hidden)' : ''}</option>)}
+          </select></label>
+        <div class="row"><button class="btn" disabled={busy || !into} onClick={() => setConfirm('merge')}>Merge…</button><span class="small muted">For duplicates. Only the same type can be merged.</span></div>
+      </div>
+
+      {error && <p class="error-box" role="alert">{error}</p>}
+      <div class="row">
+        <button class="btn" disabled={busy} onClick={() => send({ action: x.hidden ? 'unhide' : 'hide' })}>{x.hidden ? 'Unhide' : 'Hide'}</button>
+        {!u && <button class="btn danger" disabled={busy} onClick={() => setConfirm('delete')}>Delete…</button>}
+        <button class="btn" onClick={onClose}>Close</button>
+      </div>
+      <p class="small muted" style={{ margin: 0 }}>
+        {x.hidden ? 'Hidden exercises stay out of the lists you pick from. Their history stays visible.' : 'Hide an exercise you no longer use: it leaves the lists you pick from, but its history stays.'}
+        {u ? ' Used exercises can\'t be deleted.' : ''}
+      </p>
+    </Sheet>
+  );
+}
 
 function ExerciseBody() {
   const [exercises, setExercises] = useState(null);
+  const [usage, setUsage] = useState({});
+  const [people, setPeople] = useState({});
   const [loadError, setLoadError] = useState('');
   const [query, setQuery] = useState('');
   const [name, setName] = useState('');
   const [type, setType] = useState('weight');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(null);
   const [toast, toastView] = useToast();
 
-  useEffect(() => { api('exercises').then(d => setExercises(d.exercises)).catch(err => setLoadError(err.message)); }, []);
+  useEffect(() => {
+    api('exercises?usage=1').then(d => { setExercises(d.exercises); setUsage(d.usage || {}); }).catch(err => setLoadError(err.message));
+    api('people').then(d => setPeople(Object.fromEntries(d.people.map(p => [p.id, p])))).catch(() => {});
+  }, []);
 
   if (loadError) return <p class="error-box">{loadError}</p>;
   if (!exercises) return <p class="muted">Loading exercises…</p>;
 
   const similar = similarNames(name, exercises);
   const q = query.trim().toLowerCase();
-  const list = Object.values(exercises).filter(x => !q || x.name.toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name));
+  const list = Object.entries(exercises).filter(([, x]) => !q || x.name.toLowerCase().includes(q)).sort((a, b) => a[1].name.localeCompare(b[1].name));
 
   const add = async e => {
     e.preventDefault();
@@ -37,13 +126,20 @@ function ExerciseBody() {
     setBusy(false);
   };
 
+  const changed = data => {
+    setExercises(data.exercises);
+    setUsage(data.usage);
+    setOpen(null);
+    toast(data.message);
+  };
+
   return (
     <div class="stack">
       <div>
         <a class="back" href="/training/">‹ My block</a>
         <div class="eyebrow">Admin</div>
         <h1 class="t-title">Exercise list</h1>
-        <div class="meta">Blocks and extras pick from this list, so each exercise keeps one history.</div>
+        <div class="meta">Blocks and extras pick from this list, so each exercise keeps one history. Tap an exercise to rename, hide, merge or delete it.</div>
       </div>
 
       <form class="panel" onSubmit={add}>
@@ -66,10 +162,16 @@ function ExerciseBody() {
       <input id="search" class="input" type="search" placeholder={`Search ${Object.keys(exercises).length} exercises`} value={query} onInput={e => setQuery(e.currentTarget.value)} aria-label="Search the exercise list" />
       <section class="panel">
         <div class="list">
-          {list.map(x => <div class="split" key={x.name}><span>{x.name}</span><span class="chip">{TYPE_LABEL[x.type]}</span></div>)}
+          {list.map(([id, x]) => (
+            <button class="list-btn" key={id} onClick={() => setOpen(id)}>
+              <span><b>{x.name}</b><span class="sub">{usageText(usage[id], people)}</span></span>
+              <span class="row" style={{ flexWrap: 'nowrap' }}>{x.hidden && <span class="chip">Hidden</span>}<span class="chip">{TYPE_LABEL[x.type]}</span></span>
+            </button>
+          ))}
           {!list.length && <p class="muted" style={{ margin: 0 }}>No exercises match.</p>}
         </div>
       </section>
+      {open && exercises[open] && <ExerciseSheet id={open} exercises={exercises} usage={usage} people={people} onDone={changed} onClose={() => setOpen(null)} />}
       {toastView}
     </div>
   );

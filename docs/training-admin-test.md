@@ -113,6 +113,19 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] Add a set to an exercise and save. Weeks Sam has already trained keep their old counts and colours, and the change shows in workouts he hasn't started.
 - [ ] **Delete** isn't offered on a running block with training, only **Edit** and **Complete**.
 
+## 6e. Tidying the exercise list and exporting (stage 5)
+
+- [ ] On **Exercise list**, each exercise shows its usage, for example "2 sets · Sam · in 1 block", or "Not used yet".
+- [ ] Add two test exercises of the same type, for example "Test Squat" and "Test Squat 2". Put "Test Squat 2" in Sam's block (or as an extra) and log a set with a note.
+- [ ] Tap an exercise: the sheet offers **Save name**, **Merge into**, **Hide** and, only if it's never been used, **Delete**. Rename one: its history and blocks keep the new name.
+- [ ] Merge "Test Squat 2" into "Test Squat". The confirmation explains what happens. Afterwards "Test Squat 2" is gone, Sam's block and workout show "Test Squat", the logged set and note are there, and History shows it under "Test Squat".
+- [ ] **Merge into** only lists exercises of the same type.
+- [ ] Put both exercises in one workout of a queued block, then try to merge: it's refused, naming the person, block and workout. Delete that queued block afterwards.
+- [ ] **Hide** an exercise. It's gone from the block builder's picker and the "+ Add exercise" list in a workout, but still shows in workouts and History that already have it. Typing its exact name to add it says it's hidden. **Unhide** it.
+- [ ] **Delete** an unused test exercise.
+- [ ] On **History**, press **Export my training**. The CSV opens in Google Sheets or Excel with one row per set.
+- [ ] As admin, viewing Sam's History offers **Export Sam's training** and **Export everyone**. A friend only gets **Export my training**, on their own History.
+
 ## 7. Friend access (stage 1)
 
 - [ ] **Pause** the test person. In their window they see "Your access is paused. Ask Nick."
