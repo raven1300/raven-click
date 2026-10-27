@@ -28,12 +28,14 @@ export default async (req, context) => handle(async () => {
     }
     const personId = url.searchParams.get('person') || user.id;
     if (!user.people[personId]) return fail(404, 'That person doesn\'t exist.');
-    // The running block comes with a summary of each trained workout, for the tile colours.
+    // The running block (or ?block=N, for a past one) comes with a summary of each trained workout, for the tile colours.
     const blocks = await loadBlocks(personId);
-    const running = runningBlock(blocks);
+    const shown = url.searchParams.get('block')
+      ? blocks.find(b => b.num === Number(url.searchParams.get('block')) && b.status !== 'queued')
+      : runningBlock(blocks);
     const progress = {};
-    if (running) {
-      for (const [key, session] of Object.entries(await loadSessions(personId, running.num))) progress[key] = sessionSummary(session);
+    if (shown) {
+      for (const [key, session] of Object.entries(await loadSessions(personId, shown.num))) progress[key] = sessionSummary(session);
     }
     return json({ person: personId, blocks, progress });
   }

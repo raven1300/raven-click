@@ -80,6 +80,20 @@ Run these as the test person, on a phone, against a running block.
 - [ ] **Clear this workout** on a workout with sets, a note and an extra. The confirmation counts them, and afterwards the workout and its tile are back to not started.
 - [ ] Log every planned set. The tile turns pink with the date, without pressing Finish.
 - [ ] Open the same exercise the following week. "Last" shows this week's numbers.
+
+## 6c. History and viewing others (stage 3)
+
+You need a test person with sets logged in at least two workouts, ideally across two blocks.
+
+- [ ] On the dashboard, press **History**. Every exercise you've logged is listed A–Z with its last numbers. Search narrows the list.
+- [ ] Open an exercise. **Results** lists each workout newest first, with the date, block, week, workout and any note. The PB row is highlighted, and the PB is at the top.
+- [ ] Check the PB rules: weight is the heaviest weight (more reps wins a tie), timed is the longest hold, bodyweight is the most reps, and for bands "No band" beats any band.
+- [ ] **Chart** shows one point per workout once there are two. Tapping a point shows its numbers and date above the chart.
+- [ ] On a workout, **History ›** under an exercise opens its history, and **‹ Back to workout** returns. With unsaved numbers typed, it asks first.
+- [ ] Tick a new set, then open History. It's there straight away.
+- [ ] Use the **Viewing** dropdown to pick the test person. Their block grid shows, without the Admin panel. Their workouts open read-only with "This is …'s workout".
+- [ ] In History, switch **Viewing** to the test person and open one of their exercises.
+- [ ] Under **Past blocks**, open a completed block. Its grid shows, marked read-only, with a link back to the current block. Its workouts open read-only.
 - [ ] As admin, complete the block while a workout is in progress. That tile shows finished early. **Reopen** puts it back to in progress.
 - [ ] As admin, in **Build a block**, search the exercise picker for a new name. "+ Add as a new exercise" adds it to the list and the workout.
 - [ ] Someone with logged sets shows no **Remove** button, only Pause.

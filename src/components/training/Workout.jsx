@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
-import { Icon, Sheet, TYPE_LABEL, useToast } from './ui.jsx';
+import { Icon, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
 
 const FIELDS = { weight: ['reps', 'kg'], body: ['reps'], timed: ['secs'], band: ['band', 'reps'] };
 const UNITS = { reps: 'reps', kg: 'kg', secs: 'sec', band: '' };
@@ -15,13 +15,6 @@ const missing = (type, d) => REQUIRED[type].filter(f => !d || d[f] === '' || d[f
 const toValues = (type, d) => Object.fromEntries(FIELDS[type].map(f => [f, f === 'band' ? (d[f] || '') : Number(d[f])]));
 const dayLabel = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Melbourne' }).format(new Date());
-
-function fmtSet(type, s) {
-  if (type === 'weight') return `${s.reps} × ${s.kg} kg`;
-  if (type === 'timed') return `${s.secs} s`;
-  if (type === 'band') return `${s.reps} reps · ${s.band}`;
-  return `${s.reps} reps`;
-}
 
 // Every set row on the screen, in order: planned exercises, then extras.
 function rowsInOrder(view) {
@@ -153,11 +146,14 @@ function WorkoutBody({ me }) {
 
   const unsavedRows = () => rowsInOrder(view).filter(r => { const k = rowKey(r.ex, r.set, r.extra); return !findLogged(view, r) && !removed[k] && hasTyped(drafts[k]); });
 
-  const leave = () => {
+  // Leaving for the block or an exercise's history asks first if there are unsaved numbers.
+  const backHref = blockHref(me, view.person.id, view.block);
+  const leave = (to = backHref) => {
     const unsaved = unsavedRows();
-    if (!unsaved.length) { window.location.href = '/training/'; return; }
-    setSheet({ type: 'leave', rows: unsaved });
+    if (!unsaved.length) { window.location.href = to; return; }
+    setSheet({ type: 'leave', rows: unsaved, to });
   };
+  const historyHref = ex => `/training/history/exercise/?${new URLSearchParams({ person: view.person.id, ex, back: window.location.pathname + window.location.search })}`;
 
   // Plain render functions, not components, so inputs keep focus while typing.
   const setRow = row => {
@@ -232,15 +228,16 @@ function WorkoutBody({ me }) {
             onBlur={() => { if (noteText.trim() !== savedNote) post('note', { ex, extra, text: noteText }).catch(err => toast(err.message)); }}
           />
         )}
-        {canEdit && (
-          <div class="split">
+        <div class="split">
+          {canEdit ? (
             <div class="row">
               {!openNotes[noteKey] && !savedNote && <button class="btn ghost" onClick={() => setOpenNotes(o => ({ ...o, [noteKey]: true }))}>+ Note</button>}
               {extra && <button class="btn ghost" onClick={() => post('extra-sets', { ex, delta: 1 }).catch(err => toast(err.message))}>+ Set</button>}
               {extra && !lastSetLogged && <button class="btn ghost" onClick={() => post('extra-sets', { ex, delta: -1 }).catch(err => toast(err.message))}>{sets > 1 ? '− Set' : 'Remove'}</button>}
             </div>
-          </div>
-        )}
+          ) : <span />}
+          <a class="btn ghost" style={{ textDecoration: 'none' }} href={historyHref(ex)} onClick={e => { e.preventDefault(); leave(historyHref(ex)); }}>History ›</a>
+        </div>
       </article>
     );
   };
@@ -252,7 +249,7 @@ function WorkoutBody({ me }) {
   return (
     <div class="stack workout">
       <div>
-        <button class="back" onClick={leave}>‹ Block {view.block.num}</button>
+        <button class="back" onClick={() => leave()}>‹ Block {view.block.num}</button>
         <div class="eyebrow">Week {view.week} · Phase {view.phase.index + 1} · {view.phase.reps ? `${view.phase.reps} reps` : 'no target'}{view.person.id !== me.id ? ` · ${view.person.name}` : ''}</div>
         <h1 class="t-title with-icon"><Icon name={view.workout.icon} />{view.workout.name}</h1>
         <div class="row">
@@ -261,7 +258,7 @@ function WorkoutBody({ me }) {
           <input id="trained-on" class="date-in" type="date" value={session?.date || todayIso()} disabled={!canEdit || !session}
             onChange={e => e.currentTarget.value && post('date', { date: e.currentTarget.value }).then(() => toast('Date changed')).catch(err => toast(err.message))} />
         </div>
-        {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? 'You can view this workout but not change it.' : 'This block has finished, so this workout is read-only.'}</p>}
+        {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it.` : 'This block has finished, so this workout is read-only.'}</p>}
       </div>
 
       {view.plan.map(it => exerciseCard(it.ex, it.sets, false))}
@@ -321,11 +318,11 @@ function WorkoutBody({ me }) {
             <div class="row">
               {complete.length > 0 && (
                 <button class="btn primary" onClick={async () => {
-                  if (await saveRows(complete)) window.location.href = '/training/';
+                  if (await saveRows(complete)) window.location.href = sheet.to;
                   else setSheet(null);
                 }}>Save {complete.length > 1 ? 'them' : 'it'}, then leave</button>
               )}
-              <button class="btn" onClick={() => { window.location.href = '/training/'; }}>Discard {sheet.rows.length > 1 ? 'them' : 'it'} and leave</button>
+              <button class="btn" onClick={() => { window.location.href = sheet.to; }}>Discard {sheet.rows.length > 1 ? 'them' : 'it'} and leave</button>
               <button class="btn ghost" onClick={() => setSheet(null)}>Stay</button>
             </div>
           </Sheet>

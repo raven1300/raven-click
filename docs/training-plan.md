@@ -138,7 +138,8 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 **Friends and shared data**
 - Each person has their own logs and history. Everyone can see everyone's data, to encourage each other.
 - Everything opens on your own data by default.
-- **Logging for someone else** is a deliberate step ("Log for someone else", then pick the person). A banner ("Logging for **Sam**") stays on screen with a button to switch back, and it switches back on its own when you leave the session. This covers a friend whose phone is flat or left behind.
+- **Viewing (stage 3):** a "Viewing" dropdown on the dashboard and History shows anyone's block grid, past blocks and history. Their workouts open read-only ("This is Sam's workout. You can view it but not change it."). Until stage 4, the server only lets people log their own workouts, the admin included.
+- **Logging for someone else** (stage 4, open to any friend, confirmed 2026-10-27) is a deliberate step ("Log for someone else", then pick the person). A banner ("Logging for **Sam**") stays on screen with a button to switch back, and it switches back on its own when you leave the session. This covers a friend whose phone is flat or left behind.
 - **Every entry records who typed it** (for example "entered by Nick for Sam"), and the person it belongs to sees that in their history.
 - **Editing and deleting** an entry is allowed for the person who entered it, the person it belongs to, and the admin (Nick).
 
@@ -158,6 +159,12 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
   - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
+- **Stage 3 (history): in progress on branch `training-stage-3`.**
+  - `/api/training/history` (read-only): every exercise a person has logged, or one exercise across all their blocks with its PB.
+  - History list at `/training/history/` (search, Viewing dropdown) and one exercise at `/training/history/exercise/` (Results and Chart tabs, PB marked in both). The chart plots each workout's best set; tapping or hovering a point shows its details.
+  - Each exercise on the workout screen has **History ›** (asking first if there are unsaved numbers), and the history page's back link returns to that workout.
+  - Dashboard: Viewing dropdown and History button. Past blocks open their grid read-only at `/training/?block=N`.
+
 ## Next step
 
-Stages 1 and 2 are live. Next come stage 3 (history) and stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
+Stages 1 and 2 are live, and stage 3 (history) is on a Deploy Preview. Next is stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.

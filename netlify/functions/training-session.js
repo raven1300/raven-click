@@ -23,7 +23,8 @@ async function locate(user, input) {
   if (!Number.isInteger(week) || week < 1 || week > totalWeeks(block.plan)) throw new UserError(404, 'That week isn\'t in this block.');
   const workout = block.workouts.find(w => w.id === input.workout);
   if (!workout) throw new UserError(404, 'That workout isn\'t in this block.');
-  const canEdit = block.status === 'running' && (user.id === personId || !!user.person.admin);
+  // Other people's workouts are view-only until "Log for someone else" (stage 4).
+  const canEdit = block.status === 'running' && user.id === personId;
   return { personId, blocks, block, week, workout, key: sessionKey(week, workout.id), canEdit };
 }
 
