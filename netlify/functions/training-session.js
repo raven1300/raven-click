@@ -23,9 +23,13 @@ async function locate(user, input) {
   if (!Number.isInteger(week) || week < 1 || week > totalWeeks(block.plan)) throw new UserError(404, 'That week isn\'t in this block.');
   const workout = block.workouts.find(w => w.id === input.workout);
   if (!workout) throw new UserError(404, 'That workout isn\'t in this block.');
-  // Other people's workouts are view-only until "Log for someone else" (stage 4).
-  const canEdit = block.status === 'running' && user.id === personId;
-  return { personId, blocks, block, week, workout, key: sessionKey(week, workout.id), canEdit };
+  // Other people's workouts are view-only unless the request comes from "Log for someone else".
+  const own = user.id === personId;
+  const logFor = input.logFor === true || input.logFor === '1';
+  const canEdit = block.status === 'running' && (own || logFor);
+  // Clearing wipes everyone's entries, so it stays with the owner and the admin.
+  const canClear = canEdit && (own || !!user.person.admin);
+  return { personId, blocks, block, week, workout, key: sessionKey(week, workout.id), canEdit, canClear };
 }
 
 const setOrder = (a, b) => (a.extra === b.extra ? a.set - b.set : a.extra ? 1 : -1);
@@ -53,7 +57,7 @@ async function lastTimes(personId, blocks, block, key, currentSessions, exIds, b
 }
 
 async function workoutView(user, located, sessions) {
-  const { personId, blocks, block, week, workout, key, canEdit } = located;
+  const { personId, blocks, block, week, workout, key, canEdit, canClear } = located;
   const session = sessions[key] || null;
   const plan = session ? session.plan : workout.items.map(it => ({ ex: it.ex, sets: it.sets }));
   const exIds = [...new Set([...plan.map(it => it.ex), ...(session?.extras || []).map(e => e.ex)])];
@@ -70,7 +74,18 @@ async function workoutView(user, located, sessions) {
     exercises: await loadExercises(),
     last: await lastTimes(personId, blocks, block, key, sessions, exIds, date),
     canEdit,
+    canClear,
+    names: Object.fromEntries(Object.entries(user.people).map(([id, p]) => [id, p.name])),
   };
+}
+
+// A set someone else entered can be changed by them, the person it belongs to, or the admin.
+function checkCanChange(user, personId, existing) {
+  // A set with no "by" was entered by the person themselves.
+  const enteredBy = existing.by || personId;
+  if (enteredBy === user.id || user.id === personId || user.person.admin) return;
+  const name = user.people[enteredBy]?.name || 'someone else';
+  throw new UserError(403, `That set was entered by ${name}, so only ${name}, ${user.people[personId].name} or the admin can change it.`);
 }
 
 function findSet(session, ex, set, extra) {
@@ -96,7 +111,7 @@ export default async (req, context) => handle(async () => {
   const input = await body(req);
   const located = await locate(user, input);
   if (!located.canEdit) {
-    return fail(403, located.block.status !== 'running' ? 'This block has finished, so it can\'t be changed.' : 'You can only log your own training.');
+    return fail(403, located.block.status !== 'running' ? 'This block has finished, so it can\'t be changed.' : 'To log for someone else, choose them under Viewing and press "Log for…" first.');
   }
   const exercises = await loadExercises();
   const { key, workout } = located;
@@ -111,12 +126,15 @@ export default async (req, context) => handle(async () => {
         const extra = !!s.extra;
         if (!exercises[s.ex]) throw new UserError(400, 'That exercise is no longer on the list.');
         checkSetSlot(session, s.ex, s.set, extra);
-        const entry = { ex: s.ex, set: s.set, extra, ...cleanValues(exercises[s.ex].type, s.values) };
         const at = findSet(session, s.ex, s.set, extra);
+        if (at >= 0) checkCanChange(user, located.personId, session.sets[at]);
+        // Whoever saves a set last owns it; `by` is only stored when that isn't the person themselves.
+        const entry = { ex: s.ex, set: s.set, extra, ...cleanValues(exercises[s.ex].type, s.values), ...(user.id !== located.personId ? { by: user.id } : {}) };
         if (at >= 0) session.sets[at] = entry; else session.sets.push(entry);
       }
     } else if (input.action === 'unsave-set') {
       const at = findSet(session, input.ex, input.set, input.extra);
+      if (at >= 0) checkCanChange(user, located.personId, session.sets[at]);
       if (at >= 0) session.sets.splice(at, 1);
     } else if (input.action === 'note') {
       const noteKey = input.extra ? `${input.ex}|x` : input.ex;
@@ -126,6 +144,7 @@ export default async (req, context) => handle(async () => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(String(input.date)) || Number.isNaN(Date.parse(input.date))) throw new UserError(400, 'That isn\'t a valid date.');
       session.date = input.date;
     } else if (input.action === 'clear') {
+      if (!located.canClear) throw new UserError(403, `Only ${user.people[located.personId].name} or the admin can clear this workout.`);
       // Empties the workout; the check below then removes it, so the tile goes back to "not started".
       Object.assign(session, { sets: [], extras: [], notes: {}, finished: false });
       delete session.autoFinished;

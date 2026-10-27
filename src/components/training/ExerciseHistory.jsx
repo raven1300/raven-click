@@ -18,10 +18,20 @@ function topSet(type, sets) {
   });
 }
 
+// "Entered by Nick" when one helper logged every set, otherwise "Sets 2 and 3 entered by Nick".
+function enteredBy(sets, names) {
+  const helped = sets.filter(s => s.by);
+  if (!helped.length) return '';
+  const who = [...new Set(helped.map(s => s.by))];
+  if (who.length === 1 && helped.length === sets.length) return `Entered by ${names[who[0]] || 'someone else'}`;
+  const list = nums => (nums.length === 1 ? `Set ${nums[0]}` : `Sets ${nums.slice(0, -1).join(', ')} and ${nums[nums.length - 1]}`);
+  return who.map(id => `${list(helped.filter(s => s.by === id).map(s => s.set + 1))} entered by ${names[id] || 'someone else'}`).join(' · ');
+}
+
 const where = s => `Block ${s.block} · Week ${s.week} · ${s.workout.name}${s.extra ? ' · extra' : ''}`;
 
 function Results({ data }) {
-  const { exercise, sessions, best } = data;
+  const { exercise, sessions, best, names } = data;
   const cols = COLUMNS[exercise.type];
   return sessions.map((s, i) => (
     <section class="session" key={i}>
@@ -34,7 +44,7 @@ function Results({ data }) {
               const pb = best && best.session === i && best.set.set === set.set;
               return (
                 <tr key={set.set} class={pb ? 'pb' : undefined}>
-                  <td>{set.set + 1}</td>{cells(exercise.type, set).map((c, k) => <td key={k}>{c}</td>)}<td>{pb ? 'PB' : ''}</td>
+                  <td>{set.set + 1}{set.by && <span class="by-mark" title={`Entered by ${names[set.by] || 'someone else'}`}> •</span>}</td>{cells(exercise.type, set).map((c, k) => <td key={k}>{c}</td>)}<td>{pb ? 'PB' : ''}</td>
                 </tr>
               );
             })}
@@ -42,6 +52,7 @@ function Results({ data }) {
         </table>
       </div>
       {s.note && <div class="note-line">{s.note}</div>}
+      {enteredBy(s.sets, names) && <div class="note-line"><span class="by-mark">•</span> {enteredBy(s.sets, names)}</div>}
     </section>
   ));
 }

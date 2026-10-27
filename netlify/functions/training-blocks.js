@@ -41,9 +41,25 @@ export default async (req, context) => handle(async () => {
   }
   if (req.method !== 'POST') return fail(405, 'Use GET or POST.');
 
+  const input = await body(req);
+
+  // Block notes: the person and the admin can write them, on any block, including past ones.
+  if (input.action === 'notes') {
+    const user = await currentUser(req);
+    if (user instanceof Response) return user;
+    if (!user.people[input.person]) return fail(404, 'That person doesn\'t exist.');
+    if (user.id !== input.person && !user.person.admin) return fail(403, `Only ${user.people[input.person].name} or the admin can edit these notes.`);
+    const notes = String(input.notes || '').trim().slice(0, 2000);
+    await changeBlocks(input.person, blocks => {
+      const block = blocks.find(b => b.num === input.num);
+      if (!block) throw new UserError(404, 'That block no longer exists.');
+      block.notes = notes;
+    });
+    return json({ message: 'Notes saved.', notes });
+  }
+
   const user = await adminUser(req);
   if (user instanceof Response) return user;
-  const input = await body(req);
   const people = await loadPeople();
   const name = id => people[id]?.name || 'That person';
 
@@ -73,13 +89,20 @@ export default async (req, context) => handle(async () => {
     const running = runningBlock(blocks);
     const queued = queuedBlock(blocks);
     if (input.action === 'edit') {
-      // A queued block can always be edited; a running one only while nothing has been logged in it.
+      // Queued and running blocks can be edited. Once a running block has training logged, its phase
+      // plan is locked and trained workouts can't be removed; trained workouts keep their own snapshot.
       const target = [queued, running].find(b => b && b.num === input.num);
-      if (!target) throw new UserError(409, 'Only a queued block, or a running one with nothing logged, can be edited.');
-      if (target === running && await hasTraining(id, running.num)) {
-        throw new UserError(409, `Block ${running.num} has training logged, so it can't be edited yet.`);
+      if (!target) throw new UserError(409, 'Only a queued or running block can be edited.');
+      const clean = cleanBlock(input.block, await loadExercises());
+      if (target === running) {
+        const trained = new Set(Object.keys(await loadSessions(id, running.num)).map(k => k.split('/')[1]));
+        if (trained.size) {
+          clean.plan = running.plan;
+          const gone = running.workouts.find(w => trained.has(w.id) && !clean.workouts.some(c => c.id === w.id));
+          if (gone) throw new UserError(409, `${gone.name} has training logged, so it can't be removed. You can change its exercises instead.`);
+        }
       }
-      Object.assign(target, cleanBlock(input.block, await loadExercises()));
+      Object.assign(target, clean);
       message = `${name(id)}'s Block ${target.num} saved.`;
     } else if (input.action === 'delete') {
       // Like editing: a queued block, or a running one with nothing logged in it.

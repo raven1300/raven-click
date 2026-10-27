@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { api } from './api.js';
+import { api, logFor } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
 
@@ -48,6 +48,8 @@ function ExtraPicker({ exercises, taken, onPick, onClose }) {
 function WorkoutBody({ me }) {
   const params = new URLSearchParams(window.location.search);
   const query = { person: params.get('person') || me.id, block: params.get('block'), week: params.get('week'), workout: params.get('workout') };
+  // Logging for someone else only applies to the person chosen with "Log for…".
+  if (query.person !== me.id && logFor()?.id === query.person) query.logFor = '1';
 
   const [view, setView] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -148,6 +150,8 @@ function WorkoutBody({ me }) {
 
   // Leaving for the block or an exercise's history asks first if there are unsaved numbers.
   const backHref = blockHref(me, view.person.id, view.block);
+  // Sets someone else entered can only be changed by them, the owner or the admin (the server checks too).
+  const canChange = l => view.person.id === me.id || me.admin || (l.by || view.person.id) === me.id;
   const leave = (to = backHref) => {
     const unsaved = unsavedRows();
     if (!unsaved.length) { window.location.href = to; return; }
@@ -185,10 +189,11 @@ function WorkoutBody({ me }) {
           ))}
           {bands.length > 0 && <datalist id={`bands-${row.ex}`}>{bands.map(b => <option key={b} value={b} />)}</datalist>}
         </div>
-        <button class="tick" aria-pressed={logged ? 'true' : 'false'} aria-label={`${logged ? 'Untick' : 'Save'} set ${row.set + 1}`} disabled={!canEdit || busy} onClick={() => tick(row)}>✓</button>
+        <button class="tick" aria-pressed={logged ? 'true' : 'false'} aria-label={`${logged ? 'Untick' : 'Save'} set ${row.set + 1}`} disabled={!canEdit || busy || (logged && !canChange(logged))} onClick={() => tick(row)}>✓</button>
         {errors[key] ? <span class="set-msg err">{errors[key]}</span>
           : !logged && canEdit && removed[key] ? <span class="set-msg removed">Removed. Tap ✓ to save it again.</span>
           : !logged && canEdit && hasTyped(draft) ? <span class="set-msg hint">Not saved. Tap ✓</span> : null}
+        {logged?.by && <span class="entered-by">Entered by {view.names[logged.by] || 'someone else'}</span>}
       </div>
     );
   };
@@ -258,13 +263,13 @@ function WorkoutBody({ me }) {
           <input id="trained-on" class="date-in" type="date" value={session?.date || todayIso()} disabled={!canEdit || !session}
             onChange={e => e.currentTarget.value && post('date', { date: e.currentTarget.value }).then(() => toast('Date changed')).catch(err => toast(err.message))} />
         </div>
-        {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it.` : 'This block has finished, so this workout is read-only.'}</p>}
+        {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it. To log for them, press "Log for ${view.person.name}" on their block.` : 'This block has finished, so this workout is read-only.'}</p>}
       </div>
 
       {view.plan.map(it => exerciseCard(it.ex, it.sets, false))}
       {(session?.extras || []).map(e => exerciseCard(e.ex, e.sets, true))}
       {canEdit && <button class="add-dashed" onClick={() => setSheet({ type: 'extra' })}>+ Add exercise</button>}
-      {canEdit && session && <button class="btn ghost danger" style={{ alignSelf: 'center' }} onClick={() => setSheet({ type: 'clear' })}>Clear this workout</button>}
+      {view.canClear && session && <button class="btn ghost danger" style={{ alignSelf: 'center' }} onClick={() => setSheet({ type: 'clear' })}>Clear this workout</button>}
 
       <div class="finishbar">
         <div class="finishbar-inner">

@@ -53,7 +53,7 @@ A step-by-step check of the admin side of `/training`, to run on the live site a
 - [ ] Press **Complete** on a running block. The card shows "No block running".
 - [ ] Press **Reopen** on that block. It's running again, and any workout that was in progress before completing is back to in progress.
 - [ ] Complete it again, start a new block, and check that **Reopen** is no longer offered for the old one.
-- [ ] (Stage 4) Build one block for **two or more people** at once, then use **Start all queued**.
+- [ ] (Stage 4) Build one block for **two or more people** at once. It asks first, listing each person's Block number. Then use **Start all queued**.
 
 ## 6. Checking from the test person's side (stage 2 onwards)
 
@@ -97,6 +97,20 @@ You need a test person with sets logged in at least two workouts, ideally across
 - [ ] As admin, complete the block while a workout is in progress. That tile shows finished early. **Reopen** puts it back to in progress.
 - [ ] As admin, in **Build a block**, search the exercise picker for a new name. "+ Add as a new exercise" adds it to the list and the workout.
 - [ ] Someone with logged sets shows no **Remove** button, only Pause.
+
+## 6d. Logging for others, notes and editing a running block (stage 4)
+
+You need two test people (say Sam and Jess) with running blocks.
+
+- [ ] As Jess, open Sam's block under **Viewing**. His workouts are read-only. Press **Log for Sam**: a "Logging for Sam" banner appears on every page.
+- [ ] Log a set in one of Sam's workouts. It shows "Entered by Jess". Sets Sam entered himself can't be unticked by Jess, and **Clear this workout** isn't offered to her.
+- [ ] As Sam, open that exercise's History. The row has a marker and the line under it says which sets Jess entered.
+- [ ] As Sam, untick and re-tick Jess's set. The "Entered by" note goes.
+- [ ] As Jess, press **Switch back**. The banner goes and you're back on your own block. Close and reopen the tab while logging for someone: it has switched back.
+- [ ] As Sam, add **Block notes** on the dashboard ("You and Nick can both edit these"). Jess sees them but can't edit. You (admin) can edit them on Sam's block. Notes can also be edited on a past block.
+- [ ] As admin, press **Edit** on Sam's running block (which has training). The builder says training is logged, the phase plan is shown but locked, and the trained workout says "Has training logged, so it stays".
+- [ ] Add a set to an exercise and save. Weeks Sam has already trained keep their old counts and colours, and the change shows in workouts he hasn't started.
+- [ ] **Delete** isn't offered on a running block with training, only **Edit** and **Complete**.
 
 ## 7. Friend access (stage 1)
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { api } from './api.js';
+import { api, logFor, startLogFor } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, blockHref, longDate, shortDate } from './ui.jsx';
 
@@ -95,6 +95,49 @@ function AdminPanel() {
   );
 }
 
+// Notes on the block as a whole. The person and the admin can edit them, even on past blocks.
+function BlockNotes({ me, people, personId, block }) {
+  const [notes, setNotes] = useState(block.notes || '');
+  const [draft, setDraft] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const canEdit = me.id === personId || me.admin;
+  if (!canEdit && !notes) return null;
+  const adminName = people.find(p => p.admin)?.name || 'Nick';
+  const ownerName = people.find(p => p.id === personId)?.name || '';
+  const who = me.id === personId ? (me.admin ? 'Only you can edit these.' : `You and ${adminName} can both edit these.`)
+    : me.admin ? `You and ${ownerName} can both edit these.` : '';
+  const save = async () => {
+    setBusy(true); setError('');
+    try {
+      const data = await api('blocks', { method: 'POST', body: { action: 'notes', person: personId, num: block.num, notes: draft } });
+      setNotes(data.notes); setDraft(null);
+    } catch (err) { setError(err.message); }
+    setBusy(false);
+  };
+  return (
+    <section class="panel">
+      <div class="split">
+        <h2 class="t-h2">Block notes</h2>
+        {canEdit && draft === null && <button class="btn ghost" onClick={() => setDraft(notes)}>{notes ? 'Edit' : '+ Add notes'}</button>}
+      </div>
+      {draft === null ? (
+        notes ? <p class="block-notes">{notes}</p> : <p class="muted small" style={{ margin: 0 }}>No notes yet. For example "got sick around week 9".</p>
+      ) : (
+        <>
+          <textarea id="block-notes" class="input" rows="4" maxLength={2000} value={draft} onInput={e => setDraft(e.currentTarget.value)} aria-label="Block notes" />
+          {error && <p class="error-box">{error}</p>}
+          <div class="row">
+            <button class="btn primary" disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save notes'}</button>
+            <button class="btn" onClick={() => { setDraft(null); setError(''); }}>Cancel</button>
+          </div>
+        </>
+      )}
+      {canEdit && who && <span class="small muted">{who}</span>}
+    </section>
+  );
+}
+
 // Whose data is on screen. Everyone can view everyone; logging stays with your own.
 function Viewing({ me, people, personId }) {
   const historyHref = `/training/history/${personId === me.id ? '' : `?person=${encodeURIComponent(personId)}`}`;
@@ -129,6 +172,7 @@ function DashboardBody({ me }) {
   if (error) return <p class="error-box">{error}</p>;
   if (!blocks) return <p class="muted">Loading…</p>;
   const mine = personId === me.id;
+  const helping = logFor();
   const name = people.find(p => p.id === personId)?.name || (mine ? me.name : '');
   const running = blocks.find(b => b.status === 'running');
   const queued = blocks.find(b => b.status === 'queued');
@@ -152,8 +196,12 @@ function DashboardBody({ me }) {
             <div class="meta">{past ? `${longDate(past.startedAt)} – ${longDate(past.completedAt)} · read-only` : `Started ${longDate(shown.startedAt)}`}</div>
             {!past && queued && <div class="meta">Block {queued.num} is queued next.</div>}
           </div>
+          {!mine && !past && (helping?.id === personId
+            ? <p class="notice small">You're logging for {name}. Tap a workout to log it.</p>
+            : <div class="row"><button class="btn primary" onClick={() => { startLogFor({ id: personId, name }); window.location.reload(); }}>Log for {name}</button></div>)}
           <div class="meta">{doneCount} of {shown.workouts.length * weeks} workouts done</div>
           <BlockGrid personId={personId} block={shown} progress={progress} />
+          <BlockNotes key={shown.num} me={me} people={people} personId={personId} block={shown} />
         </>
       )}
       {!shown && !pastNum && (
