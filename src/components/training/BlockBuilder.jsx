@@ -78,6 +78,9 @@ function BuilderBody({ me }) {
   const editNum = Number(params.get('block'));
   const editing = !!editPerson;
   const [editStatus, setEditStatus] = useState('queued');
+  // Workouts with training logged in the running block being edited. Any at all locks the phase plan.
+  const [trainedWorkouts, setTrainedWorkouts] = useState(null);
+  const locked = !!trainedWorkouts?.size;
 
   const [exercises, setExercises] = useState(null);
   const [people, setPeople] = useState([]);
@@ -99,14 +102,15 @@ function BuilderBody({ me }) {
       setPeople(p.people);
       setAllBlocks(b.blocks);
       if (editing) {
-        // A running block can be edited only while nothing is logged in it; the server checks again on save.
         const block = (b.blocks[editPerson] || []).find(x => x.num === editNum && x.status !== 'completed');
-        if (!block || (block.status === 'running' && b.trained[editPerson])) {
-          setLoadError(block ? `Block ${editNum} has training logged, so it can't be edited yet.` : 'That block can no longer be edited. It may have been completed or deleted.');
-          return;
-        }
+        if (!block) { setLoadError('That block can no longer be edited. It may have been completed or deleted.'); return; }
         setEditStatus(block.status);
         load(block);
+        if (block.status === 'running' && b.trained[editPerson]) {
+          api(`blocks?person=${encodeURIComponent(editPerson)}`)
+            .then(d => setTrainedWorkouts(new Set(Object.keys(d.progress || {}).map(k => k.split('/')[1]))))
+            .catch(err => setLoadError(err.message));
+        }
       } else {
         const mine = (b.blocks[me.id] || []).find(x => x.status === 'running');
         if (mine) { setSource(`${me.id}:${mine.num}`); load(mine); }
@@ -133,10 +137,14 @@ function BuilderBody({ me }) {
   const changeWorkout = (wi, change) => setWorkouts(workouts.map((w, k) => (k === wi ? change(w) : w)));
   const changeItems = (wi, change) => changeWorkout(wi, w => ({ ...w, items: change([...w.items]) }));
 
-  const save = async () => {
+  const picked = Object.keys(assign).filter(id => assign[id]);
+  const nextNum = id => Math.max(0, ...(allBlocks[id] || []).map(b => b.num)) + 1;
+  // Queueing for two or more people asks first, so a stray tick doesn't create a block.
+  const save = async (confirmed = false) => {
     setError('');
-    const picked = Object.keys(assign).filter(id => assign[id]);
     if (!editing && !picked.length) { setError('Choose at least one person to get this block.'); return; }
+    if (!editing && picked.length > 1 && !confirmed) { setSheet({ type: 'queue' }); return; }
+    setSheet(null);
     setBusy(true);
     try {
       const block = { plan, workouts };
@@ -158,6 +166,7 @@ function BuilderBody({ me }) {
         <div class="eyebrow">Admin · {editing ? `Edit ${editStatus} block` : 'New block'}</div>
         <h1 class="t-title">{editing ? `${nameOf(editPerson)} · Block ${editNum}` : 'Build a block'}</h1>
       </div>
+      {locked && <p class="notice small">Training has been logged in this block. Changes apply to workouts not started yet. Workouts already trained keep the exercises and sets they were logged with.</p>}
 
       {!editing && (
         <label class="label" for="source"><span class="meta">Start from</span>
@@ -170,7 +179,11 @@ function BuilderBody({ me }) {
 
       <section class="panel">
         <div class="split"><h2 class="t-h2">Phase plan</h2><b>{totalWeeks(plan)} weeks</b></div>
-        {plan.map((ph, i) => (
+        {locked && plan.map((ph, i) => (
+          <div class="split" key={i}><span>Phase {i + 1}</span><span class="muted">{ph.weeks} weeks · {ph.reps ? `${ph.reps} reps` : 'no target'}</span></div>
+        ))}
+        {locked && <p class="small muted" style={{ margin: 0 }}>The phase plan is locked because training has been logged in this block.</p>}
+        {!locked && plan.map((ph, i) => (
           <div class="phase-row" key={i}>
             <span class="lbl">Phase {i + 1}</span>
             <label class="field"><input id={`weeks-${i}`} type="number" inputmode="numeric" min="1" value={Number.isNaN(ph.weeks) ? '' : ph.weeks} onInput={e => setPhase(i, 'weeks', e.currentTarget.value)} aria-label={`Phase ${i + 1} weeks`} /><span>weeks</span></label>
@@ -178,11 +191,11 @@ function BuilderBody({ me }) {
             <button class="square" aria-label={`Remove phase ${i + 1}`} disabled={plan.length < 2} onClick={() => setPlan(plan.filter((_, k) => k !== i))}><X /></button>
           </div>
         ))}
-        <div class="row">
+        {!locked && <div class="row">
           <button class="btn ghost" onClick={() => setPlan([...plan, { weeks: 4, reps: plan.length ? plan[plan.length - 1].reps : null }])}>+ Add phase</button>
           <button class="btn ghost" onClick={() => setPlan(STANDARD_PLAN.map(ph => ({ ...ph })))}>Use Standard (3 × 4 weeks · 10, 8, 6)</button>
-        </div>
-        <p class="small muted" style={{ margin: 0 }}>Leave reps empty for no target. Targets only apply to weight exercises. Sets are set per exercise below.</p>
+        </div>}
+        {!locked && <p class="small muted" style={{ margin: 0 }}>Leave reps empty for no target. Targets only apply to weight exercises. Sets are set per exercise below.</p>}
       </section>
 
       <h2 class="t-h2">Workouts</h2>
@@ -212,7 +225,9 @@ function BuilderBody({ me }) {
           </div>
           <div class="split">
             <button class="btn ghost" onClick={() => setSheet({ type: 'exercise', wi })}>+ Add exercise</button>
-            {workouts.length > 1 && <button class="btn ghost danger" onClick={() => setWorkouts(workouts.filter((_, k) => k !== wi))}>Remove workout</button>}
+            {workouts.length > 1 && (trainedWorkouts?.has(w.id)
+              ? <span class="small muted">Has training logged, so it stays</span>
+              : <button class="btn ghost danger" onClick={() => setWorkouts(workouts.filter((_, k) => k !== wi))}>Remove workout</button>)}
           </div>
         </article>
       ))}
@@ -237,7 +252,7 @@ function BuilderBody({ me }) {
       )}
 
       {error && <p class="error-box" role="alert">{error}</p>}
-      <button class="btn primary big" onClick={save} disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Save as queued block'}</button>
+      <button class="btn primary big" onClick={() => save()} disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Save as queued block'}</button>
 
       {sheet?.type === 'exercise' && (
         <ExercisePicker
@@ -247,6 +262,18 @@ function BuilderBody({ me }) {
           onAdded={(list, id) => { setExercises(list); changeItems(sheet.wi, items => [...items, { ex: id, sets: 2 }]); setSheet(null); }}
           onClose={() => setSheet(null)}
         />
+      )}
+      {sheet?.type === 'queue' && (
+        <Sheet title={`Queue this block for ${picked.length} people?`} onClose={() => setSheet(null)}>
+          <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+            {picked.map(id => <li key={id}><b>{nameOf(id)}</b> gets it as Block {nextNum(id)}</li>)}
+          </ul>
+          <p class="small muted" style={{ margin: 0 }}>Each gets their own copy, queued until you press Start.</p>
+          <div class="row">
+            <button class="btn primary" onClick={() => save(true)}>Queue for {picked.length} people</button>
+            <button class="btn" onClick={() => setSheet(null)}>Cancel</button>
+          </div>
+        </Sheet>
       )}
       {sheet?.type === 'icon' && (
         <IconPicker current={workouts[sheet.wi].icon} onPick={name => { changeWorkout(sheet.wi, w => ({ ...w, icon: name })); setSheet(null); }} onClose={() => setSheet(null)} />

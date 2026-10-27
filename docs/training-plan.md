@@ -71,10 +71,11 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - A queued block can be edited later from People.
 - **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
 - **Editing a running block with nothing logged (added 2026-10-27):** a running block gets **Edit** and **Delete** buttons on People for as long as nothing at all (sets, notes, extras or a Finish mark) has been logged in it. Everything can change, including the phase plan, and the start date stays the same. Delete removes it and the number is reused (unless a block is queued, which stays queued). This covers a mistake spotted just after pressing Start. Once anything is logged, the server refuses ("Block 1 has training logged, so it can't be edited yet"), and Delete is refused for good until the fuller edit below arrives.
-- **Editing a running block (admin, later stage; agreed 2026-10-26):** apart from the case above, only queued blocks can be edited. Later, Nick can edit a running block's workouts: swap, add or remove exercises, change sets, and rename workouts or change icons. Changes apply from then on.
+- **Editing a running block (admin, built in stage 4):** Nick can edit a running block's workouts: swap, add or remove exercises, change sets, and rename workouts or change icons. Changes apply from then on.
   - The **phase plan** (weeks and rep targets) stays locked once a block has started.
   - Sets already logged keep their exercise and history.
   - **Earlier weeks keep their colours:** each trained workout remembers the exercises and sets it had at the time, so a change in week 6 doesn't make weeks 1–5 look "finished early".
+  - **A workout with training logged can't be removed** (decided 2026-10-27): "Legs has training logged, so it can't be removed. You can change its exercises instead." Its tiles would otherwise vanish from the grid.
   - Each person's block is still edited separately (Nick is happy to repeat a change per person).
 - **Adding exercises from the block builder (stage 2):** when the exercise picker's search finds no match, offer "+ Add '…' as a new exercise", with a type choice and the same "Did you mean…?" check. It's added to the list and the workout at once, so building a block never means leaving the builder. Until then: save the block queued for Nick, add the exercise on the Exercise list page, then edit the block from People.
 - **Removing people (admin, added 2026-10-26):** "Remove" on a person's card, with a confirmation, for anyone with **no logged sets**. It deletes them and all their blocks. Anyone with logged sets can only be paused, so training history is never lost. This covers test people, or a block started by mistake for the wrong person. Logged sets will live under `logs/<person>/` in Blobs, and that's what the check looks at.
@@ -90,7 +91,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Merge:** fold one exercise into another. All its history moves across, blocks using it switch over, and the duplicate disappears.
   - **Hide:** for retired exercises that have history. They're removed from the pickers, but their history stays visible. They can be unhidden.
 - **Exercise list screen (admin):** search, plus "Add an exercise" with name and type. While typing, it suggests close matches ("Did you mean Back Squat?") so duplicates aren't created. Rename and merge come in the real build.
-- **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them. The "who can edit" line is worded from the viewer's side ("Only you can edit these" on Nick's own block, "You and Nick can both edit these" for a friend).
+- **Block notes:** free-text notes on the block as a whole (for example "got sick around week 9, starting fresh next block"). The person and Nick can both write them, on running and past blocks alike (confirmed 2026-10-27). The "who can edit" line is worded from the viewer's side ("Only you can edit these" on Nick's own block, "You and Nick can both edit these" for a friend).
 - **Past blocks:** listed newest first, grouped by year in collapsible sections, with only the latest year open. Opening one shows its grid as it ended, read-only. Only the block being viewed is loaded, so years of blocks stay fast.
 
 **Dashboard (after login)**
@@ -140,7 +141,9 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - Everything opens on your own data by default.
 - **Viewing (stage 3):** a "Viewing" dropdown on the dashboard and History shows anyone's block grid, past blocks and history. Their workouts open read-only ("This is Sam's workout. You can view it but not change it."). Until stage 4, the server only lets people log their own workouts, the admin included.
 - **Logging for someone else** (stage 4, open to any friend, confirmed 2026-10-27) is a deliberate step ("Log for someone else", then pick the person). A banner ("Logging for **Sam**") stays on screen with a button to switch back, and it switches back on its own when you leave the session. This covers a friend whose phone is flat or left behind.
-- **Every entry records who typed it** (for example "entered by Nick for Sam"), and the person it belongs to sees that in their history.
+- **How it works (built in stage 4):** pick the person under Viewing and press **Log for Sam**. The banner lasts until **Switch back**, until you choose anyone else under Viewing (yourself included), or until the browser tab is closed.
+- **Every set records who typed it**, per set, when that wasn't the owner. The workout shows "Entered by Jess" under those sets. History marks those rows and sums them up under the workout ("Entered by Jess" if she did them all, otherwise "Sets 2 and 3 entered by Jess"). Whoever saves a set last owns it, so if Sam re-ticks it, the marker goes.
+- **While logging for someone** (decided 2026-10-27): you can tick and edit sets, change the date, finish, and add notes and extras. You can only untick sets you entered. **Clear this workout** stays with the owner and Nick.
 - **Editing and deleting** an entry is allowed for the person who entered it, the person it belongs to, and the admin (Nick).
 
 **Storage**
@@ -159,6 +162,11 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
   - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
+- **Stage 4 (logging for others, block notes, editing a running block): in progress on branch `training-stage-4`.**
+  - Log for someone else with a banner, and "Entered by" on sets in the workout and in History.
+  - Block notes on the dashboard, editable by the person and Nick on running and past blocks.
+  - Editing a running block with training logged: phase plan locked, trained workouts can't be removed, past weeks keep their snapshot.
+  - Queueing a block for two or more people asks first, listing each person's Block number.
 - **Stage 3 (history): live since 2026-10-27**, after Nick worked through checklist section 6c on the Deploy Preview.
   - `/api/training/history` (read-only): every exercise a person has logged, or one exercise across all their blocks with its PB.
   - History list at `/training/history/` (search, Viewing dropdown) and one exercise at `/training/history/exercise/` (Results and Chart tabs, PB marked in both). The chart plots each workout's best set; tapping or hovering a point shows its details.
@@ -167,4 +175,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-Stages 1, 2 and 3 are live. Next is stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
+Stages 1, 2 and 3 are live, and stage 4 is on a Deploy Preview. After that comes stage 5 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.

@@ -227,3 +227,10 @@ a.tile { text-decoration: none; color: inherit; }
 .chart .pbdot { fill: var(--accent); }
 .chart .pbtext { fill: var(--ink); font-weight: 700; }
 .chart .hit { fill: transparent; cursor: pointer; }
+
+/* Log for someone else */
+.logfor-banner { position: sticky; top: 0; z-index: 15; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.55rem 0.8rem; border: 1.5px solid var(--progress); border-radius: 10px; background: var(--progress-soft); color: var(--progress); font-weight: 600; box-shadow: 0 0 12px rgba(212, 255, 58, 0.35); }
+.logfor-banner b { color: var(--ink); }
+.entered-by { grid-column: 2 / 4; font-size: 0.78rem; color: var(--progress); }
+.by-mark { color: var(--progress); font-size: 0.75rem; font-weight: 700; }
+.block-notes { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

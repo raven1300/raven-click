@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { api } from './api.js';
+import { api, viewingChanged } from './api.js';
 import Shell from './Shell.jsx';
 import { TYPE_LABEL, blockHref, fmtSet, shortDate } from './ui.jsx';
 
@@ -21,7 +21,7 @@ function HistoryBody({ me }) {
 
   const q = search.trim().toLowerCase();
   const shown = data.exercises.filter(e => !q || e.name.toLowerCase().includes(q));
-  const pick = id => { window.location.href = `/training/history/${id === me.id ? '' : `?person=${encodeURIComponent(id)}`}`; };
+  const pick = id => { viewingChanged(id); window.location.href = `/training/history/${id === me.id ? '' : `?person=${encodeURIComponent(id)}`}`; };
 
   return (
     <div class="stack">

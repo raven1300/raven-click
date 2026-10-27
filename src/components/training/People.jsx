@@ -140,10 +140,10 @@ function PeopleBody() {
               <div class="split">
                 <div><b>Block {run.num}</b> <span class="chip progress">Running</span><div class="small muted">Started {longDate(run.startedAt)}</div></div>
                 <div class="row">
-                  {!trained[person.id] && <>
+                  {!trained[person.id] && (
                     <button class="btn ghost danger" onClick={() => confirm(`Delete ${person.name}'s running Block ${run.num}?`, `Nothing has been logged in it, so no training is lost. ${q ? `Their queued Block ${q.num} stays queued.` : `The next block you build for ${person.name} will be Block ${run.num} again.`}`, 'Delete block', () => blockAction(person, 'delete', run.num))}>Delete</button>
-                    <a class="btn" style={{ textDecoration: 'none' }} href={`/training/admin/build/?person=${encodeURIComponent(person.id)}&block=${run.num}`}>Edit</a>
-                  </>}
+                  )}
+                  <a class="btn" style={{ textDecoration: 'none' }} href={`/training/admin/build/?person=${encodeURIComponent(person.id)}&block=${run.num}`}>Edit</a>
                   <button class="btn" onClick={() => confirm(`Complete ${person.name}'s Block ${run.num}?`, `It becomes a past block and turns read-only. Workouts still in progress become finished early. ${q ? `You can reopen it until you start Block ${q.num}. Block ${q.num} stays queued until you press Start.` : 'You can reopen it any time until you start a newer block.'}`, 'Complete block', () => blockAction(person, 'complete'))}>Complete</button>
                 </div>
               </div>

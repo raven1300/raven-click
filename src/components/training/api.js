@@ -41,3 +41,19 @@ export function takeFlash() {
     return null;
   }
 }
+
+// "Log for someone else": who you're logging for, kept for this browser tab only,
+// so it switches back by itself when the tab is closed.
+export function logFor() {
+  try { return JSON.parse(sessionStorage.getItem('training-log-for')); } catch { return null; }
+}
+export function startLogFor(person) {
+  try { sessionStorage.setItem('training-log-for', JSON.stringify({ id: person.id, name: person.name })); } catch {}
+}
+export function stopLogFor() {
+  try { sessionStorage.removeItem('training-log-for'); } catch {}
+}
+// Choosing anyone else under Viewing (yourself included) counts as switching back.
+export function viewingChanged(personId) {
+  if (logFor() && logFor().id !== personId) stopLogFor();
+}

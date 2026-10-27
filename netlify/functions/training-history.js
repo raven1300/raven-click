@@ -85,6 +85,8 @@ export default async (req, context) => handle(async () => {
     person,
     exercise: { id: exId, name: exercise.name, type: exercise.type },
     sessions: newest,
+    // For "Entered by …" on sets someone else logged.
+    names: Object.fromEntries(Object.entries(user.people).map(([id, p]) => [id, p.name])),
     best: best && { session: at, set: best.set, date: newest[at].date },
   });
 }, context);
