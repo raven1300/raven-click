@@ -159,7 +159,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
   - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
-- **Stage 3 (history): in progress on branch `training-stage-3`.**
+- **Stage 3 (history): live since 2026-10-27**, after Nick worked through checklist section 6c on the Deploy Preview.
   - `/api/training/history` (read-only): every exercise a person has logged, or one exercise across all their blocks with its PB.
   - History list at `/training/history/` (search, Viewing dropdown) and one exercise at `/training/history/exercise/` (Results and Chart tabs, PB marked in both). The chart plots each workout's best set; tapping or hovering a point shows its details.
   - Each exercise on the workout screen has **History ›** (asking first if there are unsaved numbers), and the history page's back link returns to that workout.
@@ -167,4 +167,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-Stages 1 and 2 are live, and stage 3 (history) is on a Deploy Preview. Next is stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
+Stages 1, 2 and 3 are live. Next is stage 4 (copying to several people, block notes, logging for someone else, editing a running block). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
