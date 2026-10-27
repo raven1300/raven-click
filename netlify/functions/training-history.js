@@ -83,7 +83,7 @@ export default async (req, context) => handle(async () => {
   const at = best && mine.length - 1 - best.entry;
   return json({
     person,
-    exercise: { id: exId, name: exercise.name, type: exercise.type, picture: exercise.picture, animated: exercise.animated },
+    exercise: { id: exId, name: exercise.name, type: exercise.type, picture: exercise.picture, animated: exercise.animated, video: exercise.video },
     sessions: newest,
     // For "Entered by …" on sets someone else logged.
     names: Object.fromEntries(Object.entries(user.people).map(([id, p]) => [id, p.name])),

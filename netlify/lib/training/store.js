@@ -1,6 +1,6 @@
 // Training data in Netlify Blobs, kept apart from the recipe store.
 //   people          { people: { [id]: { name, admin?, paused?, salt?, hash?, v? } } }
-//   exercises       { exercises: { [id]: { name, type, hidden?, picture?, animated? } } }
+//   exercises       { exercises: { [id]: { name, type, hidden?, picture?, animated?, video? } } }
 //   pictures/<ex>/full, pictures/<ex>/thumb   see pictures.js
 //   blocks/<person> { blocks: [ { num, status, plan, workouts, notes, createdAt, startedAt?, completedAt? } ] }
 //   lockouts/<ip>   { fails, until }

@@ -136,6 +136,7 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] **Replace picture**: the new one shows everywhere straight away (reload a workout to check). **Remove picture**: the thumbnails go.
 - [ ] Merge an exercise with a picture into one without: the kept exercise now has the picture.
 - [ ] Upload an animated GIF. The crop step says it's an animation, the thumbnail has a play badge, and tapping it plays the animation. A GIF over 4 MB is refused with a message.
+- [ ] Upload a short MP4 clip (under 4 MB). It gets a play badge and plays silently on a loop when tapped. Check this on your iPhone too, since Safari plays video differently. A video straight from the iPhone camera is likely to be refused, as too big or as HEVC, with a message saying why.
 - [ ] Choose an SVG file: it's refused. Choose a very small picture: you're warned it may look blurry, but can still use it.
 - [ ] As a friend, the thumbnails show but there's no way to change them.
 

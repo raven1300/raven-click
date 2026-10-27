@@ -109,7 +109,9 @@ function PictureView({ ex, x, onClose }) {
   }, []);
   return (
     <div class="scrim pic-view" role="dialog" aria-modal="true" aria-label={x.name} onClick={onClose}>
-      <img src={pictureUrl(ex, x.picture, 'full')} alt={x.name} />
+      {x.video
+        ? <video src={pictureUrl(ex, x.picture, 'full')} aria-label={x.name} autoPlay loop muted playsInline disablePictureInPicture />
+        : <img src={pictureUrl(ex, x.picture, 'full')} alt={x.name} />}
       <button class="btn" onClick={onClose}>Close</button>
     </div>
   );
@@ -122,7 +124,7 @@ export function Picture({ ex, x, large }) {
   if (!x?.picture) return null;
   return (
     <>
-      <button type="button" class={`pic-thumb${large ? ' large' : ''}`} aria-label={x.animated ? `Play the animation of ${x.name}` : `Show the picture of ${x.name}`} onClick={() => setOpen(true)}>
+      <button type="button" class={`pic-thumb${large ? ' large' : ''}`} aria-label={x.animated ? `Play the ${x.video ? 'video' : 'animation'} of ${x.name}` : `Show the picture of ${x.name}`} onClick={() => setOpen(true)}>
         <img src={pictureUrl(ex, x.picture, 'thumb')} alt="" loading="lazy" />
         {x.animated && <span class="pic-play" aria-hidden="true"><Play /></span>}
       </button>

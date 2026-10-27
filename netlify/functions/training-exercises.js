@@ -159,7 +159,7 @@ export default async (req, context) => handle(async () => {
     const takePicture = x.picture && !target.picture;
     if (takePicture) await copyPicture(input.id, input.into);
     await changeExercises(exercises => {
-      if (takePicture && exercises[input.into]) Object.assign(exercises[input.into], { picture: Date.now() }, x.animated ? { animated: true } : {});
+      if (takePicture && exercises[input.into]) Object.assign(exercises[input.into], { picture: Date.now() }, x.animated ? { animated: true } : {}, x.video ? { video: true } : {});
       delete exercises[input.id];
     });
     await deletePicture(input.id);

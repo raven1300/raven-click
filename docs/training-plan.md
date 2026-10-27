@@ -54,7 +54,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - Exercises without a target show last time's numbers and history for reference.
 - **Pictures (decided 2026-10-27, built in stage 6):** each exercise can optionally have one picture, uploaded by Nick. free-exercise-db was checked and left out: it says public domain but doesn't say where its images came from. ExRx is copyrighted, so nothing is copied from it. No live lookups during workouts.
   - **Upload:** on the Exercise list sheet. The browser shrinks the picture to at most 1000 pixels on its longest side, turns sideways phone photos upright and gives transparent backgrounds white. Nick then drags (and sizes) a square to crop the thumbnail.
-  - **Animations (added 2026-10-27):** an animated GIF or WebP (up to 4 MB) is stored as uploaded, so it plays in the full-size view. Its thumbnail is a still of the first frame with a play badge. A one-frame GIF counts as a still.
+  - **Animations (added 2026-10-27):** an animated GIF or WebP (up to 4 MB) is stored as uploaded, so it plays in the full-size view. Its thumbnail is a still of the first frame with a play badge. A one-frame GIF counts as a still. **MP4 and WebM clips** (also up to 4 MB) work the same way and play silently on a loop, with no controls. HEVC video (the iPhone camera's default) is refused with a message, because some browsers can't play it. The server answers range requests, which Safari needs to play video.
   - **Checks:** the server checks each file's contents, not its name: only JPEG, or an animated GIF or WebP, is accepted. SVGs are refused (they can carry code). Pictures are served with a fixed image type and `nosniff`. Pictures under 300 pixels on their short side get a "may look blurry" warning, but can still be used.
   - **Shown:** a square thumbnail beside the exercise in workouts, on its History page and on the Exercise list. Tapping it shows the whole picture, uncropped.
   - **Storage:** two JPEGs per exercise in the training store (`pictures/<ex>/full` and `pictures/<ex>/thumb`), only for logged-in people. Replacing, removing, merging (the kept exercise keeps its picture, or takes the other's) and deleting all tidy them up.
@@ -167,7 +167,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
   - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
-- **Stage 6 (pictures): in progress on branch `training-stage-6`.** Upload with a square crop, animated GIF and WebP, thumbnails in workouts, History and the Exercise list, and a full-size view.
+- **Stage 6 (pictures): in progress on branch `training-stage-6`.** Upload with a square crop, animated GIF and WebP, MP4 and WebM clips, thumbnails in workouts, History and the Exercise list, and a full-size view.
 - **Stage 5 (tidying the exercise list, CSV export): live since 2026-10-27**, after Nick checked it on the Deploy Preview.
   - Exercise list: usage per exercise, and a sheet to rename, hide or unhide, merge into another of the same type, or delete when unused. Pickers leave hidden exercises out.
   - `/api/training/export`: CSV of your own training, or anyone's and everyone's for Nick.

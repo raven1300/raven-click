@@ -1,4 +1,4 @@
-// Exercise pictures in Blobs: `pictures/<ex>/full` (JPEG, or an animated GIF or WebP) and
+// Exercise pictures in Blobs: `pictures/<ex>/full` (JPEG, an animated GIF or WebP, or an MP4 or WebM) and
 // `pictures/<ex>/thumb` (JPEG). Each file's metadata holds its type.
 import { store } from './store.js';
 

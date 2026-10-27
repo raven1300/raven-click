@@ -1,9 +1,10 @@
 // Choosing a picture for an exercise: the browser shrinks it, you drag a square for the thumbnail,
-// and two JPEGs are uploaded. The whole picture is kept for the full-size view. An animated GIF
-// or WebP is uploaded as it is instead, with a still JPEG thumbnail from its first frame.
+// and two JPEGs are uploaded. The whole picture is kept for the full-size view. An animation (an
+// animated GIF or WebP, or an MP4 or WebM clip) is uploaded as it is instead, with a still JPEG
+// thumbnail from its first frame.
 import { useRef, useState } from 'preact/hooks';
 import { api } from './api.js';
-import { MAX_ANIMATION, animationType } from '../../../netlify/lib/training/animated.js';
+import { HEVC_MESSAGE, MAX_ANIMATION, animationType, isHevc, isVideo } from '../../../netlify/lib/training/animated.js';
 
 const readDataUrl = file => new Promise((resolve, reject) => {
   const reader = new FileReader();
@@ -33,23 +34,45 @@ function loadImage(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => resolve(img);
+    img.onload = () => resolve({ source: img, width: img.naturalWidth, height: img.naturalHeight });
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That picture couldn\'t be opened. Try a JPEG or PNG. On an iPhone, choose it from the phone itself.')); };
     img.src = url;
   });
 }
 
+// Opens a video at its first frame, for the thumbnail. If this browser can't play it, says so.
+function loadVideoFrame(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    const fail = () => { clearTimeout(timer); URL.revokeObjectURL(url); reject(new Error('That video can\'t be played in this browser. Try an H.264 MP4.')); };
+    const timer = setTimeout(fail, 15000);
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.onerror = fail;
+    // Seeking a moment in makes every browser draw the first frame.
+    video.onloadeddata = () => { video.currentTime = Math.min(0.05, video.duration || 0); };
+    video.onseeked = () => {
+      clearTimeout(timer);
+      if (!video.videoWidth) return fail();
+      resolve({ source: video, width: video.videoWidth, height: video.videoHeight });
+    };
+    video.src = url;
+  });
+}
+
 // Shrinks the picture so its longest side is at most FULL_MAX, and returns it as a canvas.
-function shrink(img) {
-  const scale = Math.min(1, FULL_MAX / Math.max(img.naturalWidth, img.naturalHeight));
+function shrink({ source, width, height }) {
+  const scale = Math.min(1, FULL_MAX / Math.max(width, height));
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(img.naturalWidth * scale);
-  canvas.height = Math.round(img.naturalHeight * scale);
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
@@ -62,19 +85,23 @@ export function PictureButton({ label, onPicked, onError, disabled }) {
     if (!file) return;
     try {
       // SVGs can carry code, so they're never used.
-      if (file.type === 'image/svg+xml' || /\.svgz?$/i.test(file.name)) throw new Error('SVG pictures can\'t be used. Try a JPEG, PNG, GIF or WebP.');
-      // An animated GIF or WebP is uploaded as it is; anything else is shrunk to a JPEG.
-      const animated = animationType(new Uint8Array(await file.arrayBuffer()));
+      if (file.type === 'image/svg+xml' || /\.svgz?$/i.test(file.name)) throw new Error('SVG pictures can\'t be used. Try a JPEG, PNG, GIF, WebP, MP4 or WebM.');
+      // An animation is uploaded as it is; anything else is shrunk to a JPEG.
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const animated = animationType(bytes);
+      const video = isVideo(animated);
       if (animated && file.size > MAX_ANIMATION) {
-        throw new Error(`That animation is ${(file.size / 1024 / 1024).toFixed(1)} MB. Animations can be up to 4 MB, so make it smaller (fewer frames or a smaller size) and try again.`);
+        throw new Error(`That ${video ? 'video' : 'animation'} is ${(file.size / 1024 / 1024).toFixed(1)} MB. Animations and videos can be up to 4 MB, so make it smaller (shorter, or a smaller size) and try again.`);
       }
-      const img = await loadImage(file);
+      if (video && isHevc(bytes)) throw new Error(HEVC_MESSAGE);
+      const img = video ? await loadVideoFrame(file) : await loadImage(file);
       const canvas = shrink(img);
       onPicked({
         canvas,
         preview: canvas.toDataURL('image/jpeg', 0.85),
         animation: animated ? await readDataUrl(file) : null,
-        small: Math.min(img.naturalWidth, img.naturalHeight) < 300 && `${img.naturalWidth} × ${img.naturalHeight}`,
+        video,
+        small: Math.min(img.width, img.height) < 300 && `${img.width} × ${img.height}`,
       });
     } catch (err) {
       onError(err.message);
@@ -82,7 +109,7 @@ export function PictureButton({ label, onPicked, onError, disabled }) {
   };
   return (
     <>
-      <input ref={input} type="file" accept="image/*" hidden onChange={pick} />
+      <input ref={input} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" hidden onChange={pick} />
       <button class="btn" type="button" disabled={disabled} onClick={() => input.current.click()}>{label}</button>
     </>
   );
@@ -90,7 +117,7 @@ export function PictureButton({ label, onPicked, onError, disabled }) {
 
 // Drag the square to choose the thumbnail; the slider makes it smaller or bigger.
 export function CropStep({ ex, name, picked, onDone, onCancel }) {
-  const { canvas, preview, animation, small } = picked;
+  const { canvas, preview, animation, video, small } = picked;
   const w = canvas.width, h = canvas.height, most = Math.min(w, h);
   const [crop, setCrop] = useState({ x: (w - most) / 2, y: (h - most) / 2, s: most });
   const [error, setError] = useState('');
@@ -125,8 +152,8 @@ export function CropStep({ ex, name, picked, onDone, onCancel }) {
   return (
     <div class="stack">
       <p class="small muted" style={{ margin: 0 }}>
-        Drag the square over the part to show in the small thumbnail. Tapping the thumbnail always shows the whole {animation ? 'animation' : 'picture'}.
-        {animation && ' This is an animation: the thumbnail is a still of its first frame, with a play badge, and it plays when tapped.'}
+        Drag the square over the part to show in the small thumbnail. Tapping the thumbnail always shows the whole {video ? 'video' : animation ? 'animation' : 'picture'}.
+        {animation && ` This is ${video ? 'a video' : 'an animation'}: the thumbnail is a still of its first frame, with a play badge, and it plays${video ? ' silently, on a loop,' : ''} when tapped.`}
       </p>
       {small && <p class="notice small" style={{ margin: 0 }}>This picture is small ({small} pixels), so it may look blurry. You can still use it.</p>}
       {/* Tall pictures are kept short enough to fit on screen. */}
