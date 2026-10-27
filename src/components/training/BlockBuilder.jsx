@@ -77,6 +77,7 @@ function BuilderBody({ me }) {
   const editPerson = params.get('person');
   const editNum = Number(params.get('block'));
   const editing = !!editPerson;
+  const [editStatus, setEditStatus] = useState('queued');
 
   const [exercises, setExercises] = useState(null);
   const [people, setPeople] = useState([]);
@@ -98,8 +99,13 @@ function BuilderBody({ me }) {
       setPeople(p.people);
       setAllBlocks(b.blocks);
       if (editing) {
-        const block = (b.blocks[editPerson] || []).find(x => x.num === editNum && x.status === 'queued');
-        if (!block) { setLoadError('That queued block no longer exists. It may have been started or deleted.'); return; }
+        // A running block can be edited only while nothing is logged in it; the server checks again on save.
+        const block = (b.blocks[editPerson] || []).find(x => x.num === editNum && x.status !== 'completed');
+        if (!block || (block.status === 'running' && b.trained[editPerson])) {
+          setLoadError(block ? `Block ${editNum} has training logged, so it can't be edited yet.` : 'That block can no longer be edited. It may have been completed or deleted.');
+          return;
+        }
+        setEditStatus(block.status);
         load(block);
       } else {
         const mine = (b.blocks[me.id] || []).find(x => x.status === 'running');
@@ -148,8 +154,8 @@ function BuilderBody({ me }) {
   return (
     <div class="stack">
       <div>
-        <a class="back" href={editing ? '/training/admin/people/' : '/training/'}>‹ {editing ? 'People' : 'My block'}</a>
-        <div class="eyebrow">Admin · {editing ? 'Edit queued block' : 'New block'}</div>
+        <a class="back" href="/training/admin/people/">‹ People</a>
+        <div class="eyebrow">Admin · {editing ? `Edit ${editStatus} block` : 'New block'}</div>
         <h1 class="t-title">{editing ? `${nameOf(editPerson)} · Block ${editNum}` : 'Build a block'}</h1>
       </div>
 

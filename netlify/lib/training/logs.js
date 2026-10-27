@@ -13,7 +13,10 @@ export const sessionKey = (week, workoutId) => `${week}/${workoutId}`;
 
 export const loadSessions = async (personId, num) => (await read(logsKey(personId, num), () => ({ sessions: {} }))).sessions;
 
-export const changeSessions = (personId, num, change) =>
+// Whether anything at all (sets, notes, extras or a Finish mark) has been logged in a block.
+export const hasTraining = async (personId, num) => Object.keys(await loadSessions(personId, num)).length > 0;
+
+export const changeSessions =(personId, num, change) =>
   update(logsKey(personId, num), () => ({ sessions: {} }), async data => {
     await change(data.sessions);
     return data;

@@ -61,7 +61,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - A block has its own workouts (for example 3 for friends and 4 for Nick). Each workout lists exercises from the list, each with a number of sets.
 - Every block is fully independent. Nothing links one person's block to another's.
 - **Copy block:** copy any block from any person to one or more people. **Only the structure is copied** (workouts, exercises and sets), never logs. It becomes each person's next block number and **is queued** until Nick starts it. Each copy can then be edited separately.
-- **Start block:** a queued block waits until Nick presses "Start block", for one person or several at once. The block's start date is the day it's started. Completing a block never starts the next one automatically.
+- **Start block:** a queued block waits until Nick presses "Start block", for one person or several at once. The block's start date is the day it's started. Completing a block never starts the next one automatically. The Complete confirmation says so when a block is queued ("You can reopen it until you start Block 2. Block 2 stays queued until you press Start.").
 - **Complete block:** Nick, as admin, completes blocks for one person or for everyone, at the end of the block or earlier. Any workout still in progress becomes "finished early". Workouts nobody started stay "not started". Ticked sets stay in history either way.
 - **Block builder (admin, mocked 2026-10-26):** "Start from" a blank block or a copy of any person's block (running, queued or past). Then:
   - **Phase plan:** one row per phase, with weeks and an optional rep target, "+ Add phase", and a "Use Standard" button.
@@ -70,7 +70,8 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Saving** checks that every phase has weeks, every workout has a name and at least one exercise, and at least one person is chosen.
   - A queued block can be edited later from People.
 - **People screen (admin):** each person's running block (progress and **Complete**), and their queued block (**Edit** and **Start**). "Start all queued" starts everyone's at once. Starting while a block is running asks first, then completes the running block.
-- **Editing a running block (admin, later stage; agreed 2026-10-26):** in stage 1 only queued blocks can be edited. Later, Nick can edit a running block's workouts: swap, add or remove exercises, change sets, and rename workouts or change icons. Changes apply from then on.
+- **Editing a running block with nothing logged (added 2026-10-27):** a running block gets **Edit** and **Delete** buttons on People for as long as nothing at all (sets, notes, extras or a Finish mark) has been logged in it. Everything can change, including the phase plan, and the start date stays the same. Delete removes it and the number is reused (unless a block is queued, which stays queued). This covers a mistake spotted just after pressing Start. Once anything is logged, the server refuses ("Block 1 has training logged, so it can't be edited yet"), and Delete is refused for good until the fuller edit below arrives.
+- **Editing a running block (admin, later stage; agreed 2026-10-26):** apart from the case above, only queued blocks can be edited. Later, Nick can edit a running block's workouts: swap, add or remove exercises, change sets, and rename workouts or change icons. Changes apply from then on.
   - The **phase plan** (weeks and rep targets) stays locked once a block has started.
   - Sets already logged keep their exercise and history.
   - **Earlier weeks keep their colours:** each trained workout remembers the exercises and sets it had at the time, so a change in week 6 doesn't make weeks 1–5 look "finished early".
@@ -120,6 +121,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 **History (per exercise)**
 - A Results tab (by date, then sets, reps and weight) and a Chart tab, with personal bests marked, like the current app. It spans all blocks.
+- **Personal bests (decided 2026-10-27):** weight exercises: the heaviest weight, with more reps breaking a tie (not an estimated one-rep max). Bodyweight: most reps. Timed: longest hold. Band: most reps, with "No band" beating any band.
 - **Export to CSV** as a backup that opens in Google Sheets or Excel. Each person can export their own data, and Nick can export everyone's.
 
 **Access (decided 2026-10-25, passwords 2026-10-26)**

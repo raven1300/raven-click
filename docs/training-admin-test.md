@@ -46,6 +46,10 @@ A step-by-step check of the admin side of `/training`, to run on the live site a
 - [ ] **Delete** it. It disappears. Build it again, and the Block number is the same as before.
 - [ ] Press **Start**. It starts today.
 - [ ] Queue another block for the test person and press **Start**. It warns that the running block will be completed first. Confirm.
+- [ ] Start a block and, before logging anything, press **Edit** on the running block. The builder says "Edit running block". Change the sets and save: the change is kept and it is still running from the same date.
+- [ ] Press **Delete** on that untouched running block and confirm. It disappears, and the next block built for that person reuses its number.
+- [ ] Start a block again and log one set in it. **Edit** and **Delete** disappear from the running block on People.
+- [ ] Press **Complete** with a block queued: the message names the queued block and says it stays queued. Cancel, delete the queued block, and press **Complete** again: the message no longer mentions a queued block.
 - [ ] Press **Complete** on a running block. The card shows "No block running".
 - [ ] Press **Reopen** on that block. It's running again, and any workout that was in progress before completing is back to in progress.
 - [ ] Complete it again, start a new block, and check that **Reopen** is no longer offered for the old one.

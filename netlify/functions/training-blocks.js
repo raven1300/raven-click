@@ -1,7 +1,7 @@
 import { adminUser, body, currentUser, fail, handle, json, UserError } from '../lib/training/http.js';
 import { blocksKey, loadBlocks, loadExercises, loadPeople, today, update } from '../lib/training/store.js';
 import { cleanBlock, nextNumber, queuedBlock, reopenableBlock, runningBlock } from '../lib/training/blocks.js';
-import { finishInProgress, loadSessions, sessionSummary, undoAutoFinish } from '../lib/training/logs.js';
+import { finishInProgress, hasTraining, loadSessions, sessionSummary, undoAutoFinish } from '../lib/training/logs.js';
 
 const changeBlocks = (personId, change) => update(blocksKey(personId), () => ({ blocks: [] }), async data => {
   await change(data.blocks);
@@ -15,8 +15,16 @@ export default async (req, context) => handle(async () => {
     if (user instanceof Response) return user;
     const url = new URL(req.url);
     if (url.searchParams.get('all')) {
-      const entries = await Promise.all(Object.keys(user.people).map(async id => [id, await loadBlocks(id)]));
-      return json({ blocks: Object.fromEntries(entries) });
+      // `trained` says, per person, whether their running block has anything logged (only then is it locked from editing).
+      const entries = await Promise.all(Object.keys(user.people).map(async id => {
+        const blocks = await loadBlocks(id);
+        const running = runningBlock(blocks);
+        return [id, blocks, running ? await hasTraining(id, running.num) : false];
+      }));
+      return json({
+        blocks: Object.fromEntries(entries.map(([id, blocks]) => [id, blocks])),
+        trained: Object.fromEntries(entries.map(([id, , trained]) => [id, trained])),
+      });
     }
     const personId = url.searchParams.get('person') || user.id;
     if (!user.people[personId]) return fail(404, 'That person doesn\'t exist.');
@@ -63,13 +71,23 @@ export default async (req, context) => handle(async () => {
     const running = runningBlock(blocks);
     const queued = queuedBlock(blocks);
     if (input.action === 'edit') {
-      if (!queued || queued.num !== input.num) throw new UserError(409, 'Only a queued block can be edited.');
-      Object.assign(queued, cleanBlock(input.block, await loadExercises()));
-      message = `${name(id)}'s Block ${queued.num} saved.`;
+      // A queued block can always be edited; a running one only while nothing has been logged in it.
+      const target = [queued, running].find(b => b && b.num === input.num);
+      if (!target) throw new UserError(409, 'Only a queued block, or a running one with nothing logged, can be edited.');
+      if (target === running && await hasTraining(id, running.num)) {
+        throw new UserError(409, `Block ${running.num} has training logged, so it can't be edited yet.`);
+      }
+      Object.assign(target, cleanBlock(input.block, await loadExercises()));
+      message = `${name(id)}'s Block ${target.num} saved.`;
     } else if (input.action === 'delete') {
-      if (!queued || queued.num !== input.num) throw new UserError(409, 'Only a queued block can be deleted.');
-      blocks.splice(blocks.indexOf(queued), 1);
-      message = `Queued Block ${queued.num} deleted.`;
+      // Like editing: a queued block, or a running one with nothing logged in it.
+      const target = [queued, running].find(b => b && b.num === input.num);
+      if (!target) throw new UserError(409, 'Only a queued block, or a running one with nothing logged, can be deleted.');
+      if (target === running && await hasTraining(id, running.num)) {
+        throw new UserError(409, `Block ${running.num} has training logged, so it can't be deleted.`);
+      }
+      blocks.splice(blocks.indexOf(target), 1);
+      message = `${target === running ? 'Running' : 'Queued'} Block ${target.num} deleted.`;
     } else if (input.action === 'start') {
       if (!queued) throw new UserError(409, `${name(id)} has no queued block to start.`);
       if (running) { Object.assign(running, { status: 'completed', completedAt: today() }); completedNum = running.num; }
