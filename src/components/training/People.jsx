@@ -77,6 +77,7 @@ function ConfirmSheet({ title, text, button, onConfirm, onClose }) {
 function PeopleBody() {
   const [people, setPeople] = useState(null);
   const [blocks, setBlocks] = useState({});
+  const [trained, setTrained] = useState({});
   const [error, setError] = useState('');
   const [sheet, setSheet] = useState(null);
   const [toast, toastView] = useToast();
@@ -86,6 +87,7 @@ function PeopleBody() {
       const [p, b] = await Promise.all([api('people'), api('blocks?all=1')]);
       setPeople(p.people);
       setBlocks(b.blocks);
+      setTrained(b.trained);
     } catch (err) {
       setError(err.message);
     }
@@ -137,7 +139,10 @@ function PeopleBody() {
             {run && (
               <div class="split">
                 <div><b>Block {run.num}</b> <span class="chip progress">Running</span><div class="small muted">Started {longDate(run.startedAt)}</div></div>
-                <button class="btn" onClick={() => confirm(`Complete ${person.name}'s Block ${run.num}?`, 'It becomes a past block and turns read-only. Workouts still in progress become finished early. You can reopen it until a newer block starts.', 'Complete block', () => blockAction(person, 'complete'))}>Complete</button>
+                <div class="row">
+                  {!trained[person.id] && <a class="btn" style={{ textDecoration: 'none' }} href={`/training/admin/build/?person=${encodeURIComponent(person.id)}&block=${run.num}`}>Edit</a>}
+                  <button class="btn" onClick={() => confirm(`Complete ${person.name}'s Block ${run.num}?`, `It becomes a past block and turns read-only. Workouts still in progress become finished early. ${q ? `You can reopen it until you start Block ${q.num}. Block ${q.num} stays queued until you press Start.` : 'You can reopen it any time until you start a newer block.'}`, 'Complete block', () => blockAction(person, 'complete'))}>Complete</button>
+                </div>
               </div>
             )}
             {!run && ro && (
