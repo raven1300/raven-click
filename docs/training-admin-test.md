@@ -126,6 +126,17 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] On **History**, press **Export my training**. The CSV opens in Google Sheets or Excel with one row per set.
 - [ ] As admin, viewing Sam's History offers **Export Sam's training** and **Export everyone**. A friend only gets **Export my training**, on their own History.
 
+## 6f. Pictures (stage 6)
+
+- [ ] On **Exercise list**, tap an exercise and press **Add picture**. On your phone you can take a photo or choose one. A wide or tall picture shows with a square over it: drag it, and use **Square size** to make it smaller, then press **Use this picture**.
+- [ ] The exercise's row shows a small thumbnail of the square you chose.
+- [ ] In a workout with that exercise, the thumbnail sits beside its name. Tap it: the whole picture shows, fitting the screen. **Close** (or tapping anywhere) goes back.
+- [ ] The exercise's History page shows the thumbnail too.
+- [ ] Try a sideways phone photo: it comes out upright. Try a screenshot or PNG: fine too.
+- [ ] **Replace picture**: the new one shows everywhere straight away (reload a workout to check). **Remove picture**: the thumbnails go.
+- [ ] Merge an exercise with a picture into one without: the kept exercise now has the picture.
+- [ ] As a friend, the thumbnails show but there's no way to change them.
+
 ## 7. Friend access (stage 1)
 
 - [ ] **Pause** the test person. In their window they see "Your access is paused. Ask Nick."

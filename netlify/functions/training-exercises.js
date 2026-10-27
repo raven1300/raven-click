@@ -1,6 +1,7 @@
 import { adminUser, body, currentUser, fail, handle, json, UserError } from '../lib/training/http.js';
 import { blocksKey, loadExercises, loadPeople, read, slug, store, update } from '../lib/training/store.js';
 import { STARTING_EXERCISES } from '../lib/training/exercises.js';
+import { copyPicture, deletePicture } from '../lib/training/pictures.js';
 
 const TYPES = ['weight', 'body', 'timed', 'band'];
 const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -147,13 +148,21 @@ export default async (req, context) => handle(async () => {
     // Only for exercises nothing uses, so no history or block is lost.
     if (usage(await everything())[input.id]) return fail(409, `${x.name} is used, so it can't be deleted. Hide it or merge it instead.`);
     await changeExercises(exercises => { delete exercises[input.id]; });
+    await deletePicture(input.id);
     message = `${x.name} deleted.`;
   } else if (action === 'merge') {
     const target = current[input.into];
     if (!target || input.into === input.id) return fail(400, 'Choose another exercise to merge into.');
     if (target.type !== x.type) return fail(400, `${x.name} and ${target.name} are different types, so they can't be merged.`);
     const moved = await merge(input.id, input.into);
-    await changeExercises(exercises => { delete exercises[input.id]; });
+    // The kept exercise keeps its own picture, or takes this one's if it has none.
+    const takePicture = x.picture && !target.picture;
+    if (takePicture) await copyPicture(input.id, input.into);
+    await changeExercises(exercises => {
+      if (takePicture && exercises[input.into]) exercises[input.into].picture = Date.now();
+      delete exercises[input.id];
+    });
+    await deletePicture(input.id);
     message = `${x.name} merged into ${target.name}${moved ? ` (${moved} set${moved === 1 ? '' : 's'} moved)` : ''}.`;
   } else {
     return fail(400, 'Unknown action.');

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
-import { Icon, TYPE_LABEL, fmtSet, longDate, shortDate } from './ui.jsx';
+import { Icon, Picture, TYPE_LABEL, fmtSet, longDate, shortDate } from './ui.jsx';
 
 const COLUMNS = { weight: ['Reps', 'Weight'], body: ['Reps'], timed: ['Seconds'], band: ['Reps', 'Band'] };
 const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg`] : type === 'timed' ? [s.secs] : type === 'band' ? [s.reps, s.band] : [s.reps]);
@@ -136,7 +136,7 @@ function ExerciseHistoryBody({ me }) {
       <div>
         {backLink}
         <div class="eyebrow">{person.name} · {TYPE_LABEL[exercise.type]}</div>
-        <h1 class="t-title">{exercise.name}</h1>
+        <div class="ex-head"><h1 class="t-title">{exercise.name}</h1><Picture ex={exercise.id} x={exercise} large /></div>
         {best && <div class="meta"><Icon name="trophy" /> Personal best: <b class="pb">{fmtSet(exercise.type, best.set)}</b> on {longDate(best.date)}</div>}
       </div>
       {!sessions.length ? <p class="muted">Nothing logged for this exercise yet.</p> : (
