@@ -162,7 +162,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
   - **Separate preview data:** functions use the `training` Blobs store on the live site and `training-preview` on Deploy Previews and in local testing, chosen from the deploy context. The preview shows a "Preview data" note.
   - **Unsaved drafts change:** typed-but-unticked numbers live only on the workout page. Leaving with any asks first ("Save and leave", "Leave without saving" or "Stay").
 
-- **Stage 5 (tidying the exercise list, CSV export): in progress on branch `training-stage-5`.**
+- **Stage 5 (tidying the exercise list, CSV export): live since 2026-10-27**, after Nick checked it on the Deploy Preview.
   - Exercise list: usage per exercise, and a sheet to rename, hide or unhide, merge into another of the same type, or delete when unused. Pickers leave hidden exercises out.
   - `/api/training/export`: CSV of your own training, or anyone's and everyone's for Nick.
 - **Stage 4 (logging for others, block notes, editing a running block): live since 2026-10-27**, after Nick worked through checklist section 6d on the Deploy Preview.
@@ -178,4 +178,4 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 ## Next step
 
-Stages 1 to 4 are live, and stage 5 is on a Deploy Preview. After that, pictures are stage 6 (split off 2026-10-27). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
+Stages 1 to 5 are live. Next is stage 6: pictures (split off 2026-10-27). The clickable mockup (made-up data, private to Nick's claude.ai account) is still at https://claude.ai/artifact/FLcAjJovNuxY66kYqfFmBV.
