@@ -200,3 +200,30 @@ a.tile { text-decoration: none; color: inherit; }
 .finishbar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 10; }
 .finishbar-inner { max-width: 40rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem max(16px, env(safe-area-inset-right, 0px)) 0.7rem max(16px, env(safe-area-inset-left, 0px)); }
 .set-msg.removed { color: var(--muted); }
+
+/* History */
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.meta svg { width: 1em; height: 1em; vertical-align: -0.12em; color: var(--accent); }
+.list-btn[aria-current="page"] b { color: var(--accent); }
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tabs button { flex: 1; background: none; border: 0; border-bottom: 3px solid transparent; padding: 0.6rem; font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.session { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.session-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.25rem 0.75rem; padding: 0.6rem 0.9rem; background: var(--surface-2); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.table-wrap { overflow-x: auto; }
+.session table { border-collapse: collapse; width: 100%; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.session th, .session td { text-align: left; padding: 0.4rem 0.9rem; overflow-wrap: anywhere; border-bottom: 1px solid var(--line); }
+.session th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+.session tr:last-child td { border-bottom: 0; }
+.pb { color: var(--accent); font-weight: 700; }
+.note-line { padding: 0.5rem 0.9rem; font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); }
+.chart-readout { font-variant-numeric: tabular-nums; min-height: 1.5em; }
+.chart { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .cursor { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.chart .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.chart .dot { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.chart .pbdot { fill: var(--accent); }
+.chart .pbtext { fill: var(--ink); font-weight: 700; }
+.chart .hit { fill: transparent; cursor: pointer; }

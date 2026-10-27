@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
-import { Icon, longDate } from './ui.jsx';
+import { Icon, blockHref, longDate, shortDate } from './ui.jsx';
 
-const shortDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }); };
 const STATE_LABEL = { none: 'not started', progress: 'in progress', done: 'done', incomplete: 'finished early' };
 
-function Tile({ block, week, workout, summary }) {
+function Tile({ personId, block, week, workout, summary }) {
   const state = summary?.state || 'none';
   const label = state === 'done' ? `✓ ${shortDate(summary.date)}`
     : state === 'incomplete' ? `${summary.logged}/${summary.total} · ${shortDate(summary.date)}`
     : state === 'progress' ? `${summary.logged}/${summary.total} sets` : '';
-  const href = `/training/workout/?block=${block.num}&week=${week}&workout=${encodeURIComponent(workout.id)}`;
+  const href = `/training/workout/?${new URLSearchParams({ person: personId, block: block.num, week, workout: workout.id })}`;
   return (
     <a class={`tile ${state}`} href={href} aria-label={`Week ${week} ${workout.name}: ${STATE_LABEL[state]}`}>
       {state === 'progress' && <span class="fill" style={{ height: `${Math.round((summary.logged / summary.total) * 100)}%` }} />}
@@ -21,7 +20,7 @@ function Tile({ block, week, workout, summary }) {
   );
 }
 
-function BlockGrid({ block, progress }) {
+function BlockGrid({ personId, block, progress }) {
   const n = block.workouts.length;
   let weekNo = 0;
   return (
@@ -40,7 +39,7 @@ function BlockGrid({ block, progress }) {
               <div class="week" key={week}>
                 <span class="wk">W{week}</span>
                 <div class="tiles" style={{ '--n': n }}>
-                  {block.workouts.map(wo => <Tile key={wo.id} block={block} week={week} workout={wo} summary={progress[`${week}/${wo.id}`]} />)}
+                  {block.workouts.map(wo => <Tile key={wo.id} personId={personId} block={block} week={week} workout={wo} summary={progress[`${week}/${wo.id}`]} />)}
                 </div>
               </div>
             ))}
@@ -52,7 +51,7 @@ function BlockGrid({ block, progress }) {
   );
 }
 
-function PastBlocks({ blocks }) {
+function PastBlocks({ me, personId, blocks, shownNum }) {
   const past = blocks.filter(b => b.status === 'completed').sort((a, b) => b.num - a.num);
   if (!past.length) return <section class="panel"><h2 class="t-h2">Past blocks</h2><p class="muted" style={{ margin: 0 }}>None yet.</p></section>;
   const years = [...new Set(past.map(b => (b.startedAt || b.createdAt).slice(0, 4)))];
@@ -66,7 +65,10 @@ function PastBlocks({ blocks }) {
             <summary><b>{year}</b> <span class="muted small">{inYear.length} block{inYear.length > 1 ? 's' : ''}</span></summary>
             <div class="list">
               {inYear.map(b => (
-                <div key={b.num}><b>Block {b.num}</b><span class="sub muted small" style={{ display: 'block' }}>{longDate(b.startedAt)} – {longDate(b.completedAt)}</span></div>
+                <a class="list-btn" key={b.num} href={blockHref(me, personId, b)} aria-current={b.num === shownNum ? 'page' : undefined}>
+                  <span><b>Block {b.num}</b><span class="sub">{longDate(b.startedAt)} – {longDate(b.completedAt)}{b.num === shownNum ? ' · showing' : ''}</span></span>
+                  <span class="chev">›</span>
+                </a>
               ))}
             </div>
           </details>
@@ -93,39 +95,76 @@ function AdminPanel() {
   );
 }
 
+// Whose data is on screen. Everyone can view everyone; logging stays with your own.
+function Viewing({ me, people, personId }) {
+  const historyHref = `/training/history/${personId === me.id ? '' : `?person=${encodeURIComponent(personId)}`}`;
+  return (
+    <div class="split">
+      {people.length > 1 ? (
+        <label class="row" for="viewing"><span class="meta">Viewing</span>
+          <select id="viewing" class="select" value={personId} onChange={e => { window.location.href = blockHref(me, e.currentTarget.value); }}>
+            {people.map(p => <option key={p.id} value={p.id}>{p.name}{p.id === me.id ? ' (you)' : ''}</option>)}
+          </select>
+        </label>
+      ) : <span />}
+      <a class="btn" style={{ textDecoration: 'none' }} href={historyHref}>History</a>
+    </div>
+  );
+}
+
 function DashboardBody({ me }) {
+  const params = new URLSearchParams(window.location.search);
+  const personId = params.get('person') || me.id;
+  const pastNum = Number(params.get('block')) || null;
+  const [people, setPeople] = useState([]);
   const [blocks, setBlocks] = useState(null);
   const [progress, setProgress] = useState({});
   const [error, setError] = useState('');
-  useEffect(() => { api('blocks').then(d => { setBlocks(d.blocks); setProgress(d.progress || {}); }).catch(err => setError(err.message)); }, []);
+  useEffect(() => {
+    const query = new URLSearchParams({ person: personId, ...(pastNum ? { block: pastNum } : {}) });
+    api(`blocks?${query}`).then(d => { setBlocks(d.blocks); setProgress(d.progress || {}); }).catch(err => setError(err.message));
+    api('people').then(d => setPeople(d.people)).catch(() => {});
+  }, []);
 
   if (error) return <p class="error-box">{error}</p>;
-  if (!blocks) return <p class="muted">Loading your block…</p>;
+  if (!blocks) return <p class="muted">Loading…</p>;
+  const mine = personId === me.id;
+  const name = people.find(p => p.id === personId)?.name || (mine ? me.name : '');
   const running = blocks.find(b => b.status === 'running');
   const queued = blocks.find(b => b.status === 'queued');
+  const past = pastNum ? blocks.find(b => b.num === pastNum && b.status === 'completed') : null;
+  const shown = past || (pastNum ? null : running);
+  const weeks = shown ? shown.plan.reduce((a, ph) => a + ph.weeks, 0) : 0;
+  const doneCount = Object.values(progress).filter(s => s.state === 'done' || s.state === 'incomplete').length;
 
   return (
     <div class="stack">
-      {running ? (
+      <Viewing me={me} people={people} personId={personId} />
+      {pastNum && !past && (
+        <p class="error-box">That isn't a past block. <a href={blockHref(me, personId)}>Show the current block</a></p>
+      )}
+      {shown && (
         <>
           <div>
-            <div class="eyebrow">{me.name}</div>
-            <h1 class="t-title">Block {running.num}</h1>
-            <div class="meta">Started {longDate(running.startedAt)}</div>
-            {queued && <div class="meta">Block {queued.num} is queued next.</div>}
+            {past && <a class="back" href={blockHref(me, personId)}>‹ {running ? `Block ${running.num} (current)` : 'Current block'}</a>}
+            <div class="eyebrow">{name}{past ? ' · Past block' : ''}</div>
+            <h1 class="t-title">Block {shown.num}</h1>
+            <div class="meta">{past ? `${longDate(past.startedAt)} – ${longDate(past.completedAt)} · read-only` : `Started ${longDate(shown.startedAt)}`}</div>
+            {!past && queued && <div class="meta">Block {queued.num} is queued next.</div>}
           </div>
-          <div class="meta">{Object.values(progress).filter(s => s.state === 'done' || s.state === 'incomplete').length} of {running.workouts.length * running.plan.reduce((a, ph) => a + ph.weeks, 0)} workouts done</div>
-          <BlockGrid block={running} progress={progress} />
+          <div class="meta">{doneCount} of {shown.workouts.length * weeks} workouts done</div>
+          <BlockGrid personId={personId} block={shown} progress={progress} />
         </>
-      ) : (
+      )}
+      {!shown && !pastNum && (
         <div>
-          <div class="eyebrow">{me.name}</div>
+          <div class="eyebrow">{name}</div>
           <h1 class="t-title">No block running</h1>
-          <div class="meta">{queued ? `Block ${queued.num} is ready. It starts when Nick presses Start.` : 'Nick will set up your next block soon.'}</div>
+          <div class="meta">{queued ? `Block ${queued.num} is ready. It starts when Nick presses Start.` : mine ? 'Nick will set up your next block soon.' : `${name} has no block running.`}</div>
         </div>
       )}
-      <PastBlocks blocks={blocks} />
-      {me.admin && <AdminPanel />}
+      <PastBlocks me={me} personId={personId} blocks={blocks} shownNum={past?.num} />
+      {me.admin && mine && <AdminPanel />}
     </div>
   );
 }

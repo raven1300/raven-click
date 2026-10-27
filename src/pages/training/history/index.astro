@@ -1,0 +1,7 @@
+---
+import TrainingLayout from '../../../layouts/training/TrainingLayout.astro';
+import History from '../../../components/training/History.jsx';
+---
+<TrainingLayout pageTitle="History">
+  <History client:only="preact" />
+</TrainingLayout>

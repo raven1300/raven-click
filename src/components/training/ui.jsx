@@ -21,6 +21,23 @@ export const TYPE_LABEL = { weight: 'Weight', body: 'Bodyweight', timed: 'Timed'
 const parseDay = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 export const longDate = s => (s ? parseDay(s).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
+export const shortDate = s => parseDay(s).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+
+export function fmtSet(type, s) {
+  if (type === 'weight') return `${s.reps} × ${s.kg} kg`;
+  if (type === 'timed') return `${s.secs} s`;
+  if (type === 'band') return `${s.reps} reps · ${s.band}`;
+  return `${s.reps} reps`;
+}
+
+// The dashboard for a person's block: their running one unless `block` names a past one.
+export const blockHref = (me, personId, block) => {
+  const q = new URLSearchParams();
+  if (personId && personId !== me.id) q.set('person', personId);
+  if (block && block.status === 'completed') q.set('block', block.num);
+  return `/training/${q.size ? `?${q}` : ''}`;
+};
+
 export const totalWeeks = plan => plan.reduce((sum, ph) => sum + (ph.weeks || 0), 0);
 
 export function Sheet({ title, children, onClose }) {
