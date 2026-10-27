@@ -53,3 +53,7 @@ export function startLogFor(person) {
 export function stopLogFor() {
   try { sessionStorage.removeItem('training-log-for'); } catch {}
 }
+// Choosing anyone else under Viewing (yourself included) counts as switching back.
+export function viewingChanged(personId) {
+  if (logFor() && logFor().id !== personId) stopLogFor();
+}

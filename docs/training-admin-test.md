@@ -107,6 +107,7 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] As Sam, open that exercise's History. The row has a marker and the line under it says which sets Jess entered.
 - [ ] As Sam, untick and re-tick Jess's set. The "Entered by" note goes.
 - [ ] As Jess, press **Switch back**. The banner goes and you're back on your own block. Close and reopen the tab while logging for someone: it has switched back.
+- [ ] Log for Sam again, then choose yourself under Viewing: the banner goes. Log for Sam again and choose a third person: the banner goes and their dashboard offers **Log for** them.
 - [ ] As Sam, add **Block notes** on the dashboard ("You and Nick can both edit these"). Jess sees them but can't edit. You (admin) can edit them on Sam's block. Notes can also be edited on a past block.
 - [ ] As admin, press **Edit** on Sam's running block (which has training). The builder says training is logged, the phase plan is shown but locked, and the trained workout says "Has training logged, so it stays".
 - [ ] Add a set to an exercise and save. Weeks Sam has already trained keep their old counts and colours, and the change shows in workouts he hasn't started.

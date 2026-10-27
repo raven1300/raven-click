@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { api, logFor, startLogFor } from './api.js';
+import { api, logFor, startLogFor, viewingChanged } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, blockHref, longDate, shortDate } from './ui.jsx';
 
@@ -145,7 +145,7 @@ function Viewing({ me, people, personId }) {
     <div class="split">
       {people.length > 1 ? (
         <label class="row" for="viewing"><span class="meta">Viewing</span>
-          <select id="viewing" class="select" value={personId} onChange={e => { window.location.href = blockHref(me, e.currentTarget.value); }}>
+          <select id="viewing" class="select" value={personId} onChange={e => { viewingChanged(e.currentTarget.value); window.location.href = blockHref(me, e.currentTarget.value); }}>
             {people.map(p => <option key={p.id} value={p.id}>{p.name}{p.id === me.id ? ' (you)' : ''}</option>)}
           </select>
         </label>
