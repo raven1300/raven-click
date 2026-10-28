@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   Activity, BicepsFlexed, Bike, Dumbbell, Flame, Footprints, Grab, HeartPulse,
-  Mountain, Rocket, Star, Target, Timer, Trophy, Weight, Zap,
+  Mountain, Play, Rocket, Star, Target, Timer, Trophy, Weight, Zap,
 } from 'lucide-preact';
 
 export const ICONS = {
@@ -95,4 +95,40 @@ export function similarNames(name, exercises) {
       return typed.length > 0 && typed.every(w => existing.some(e => e === w || distance(e, w) <= 1));
     })
     .map(x => x.name);
+}
+
+// Exercise pictures: a square thumbnail (cropped when uploaded) and the whole picture.
+// `version` changes on every upload, so a replaced picture is never shown from the cache.
+export const pictureUrl = (ex, version, size) => `/api/training/picture?${new URLSearchParams({ ex, size, v: version })}`;
+
+function PictureView({ ex, x, onClose }) {
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+  return (
+    <div class="scrim pic-view" role="dialog" aria-modal="true" aria-label={x.name} onClick={onClose}>
+      {x.video
+        ? <video src={pictureUrl(ex, x.picture, 'full')} aria-label={x.name} autoPlay loop muted playsInline disablePictureInPicture />
+        : <img src={pictureUrl(ex, x.picture, 'full')} alt={x.name} />}
+      <button class="btn" onClick={onClose}>Close</button>
+    </div>
+  );
+}
+
+// The thumbnail, if the exercise has a picture. Tapping it shows the whole picture, or plays the
+// animation (marked with a play badge).
+export function Picture({ ex, x, large }) {
+  const [open, setOpen] = useState(false);
+  if (!x?.picture) return null;
+  return (
+    <>
+      <button type="button" class={`pic-thumb${large ? ' large' : ''}`} aria-label={x.animated ? `Play the ${x.video ? 'video' : 'animation'} of ${x.name}` : `Show the picture of ${x.name}`} onClick={() => setOpen(true)}>
+        <img src={pictureUrl(ex, x.picture, 'thumb')} alt="" loading="lazy" />
+        {x.animated && <span class="pic-play" aria-hidden="true"><Play /></span>}
+      </button>
+      {open && <PictureView ex={ex} x={x} onClose={() => setOpen(false)} />}
+    </>
+  );
 }

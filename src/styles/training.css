@@ -234,3 +234,22 @@ a.tile { text-decoration: none; color: inherit; }
 .entered-by { grid-column: 2 / 4; font-size: 0.78rem; color: var(--progress); }
 .by-mark { color: var(--progress); font-size: 0.75rem; font-weight: 700; }
 .block-notes { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Exercise pictures: square thumbnails (cropped on upload), the full-size view, and the crop step. */
+.ex-title { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+.pic-thumb { flex: none; width: 3.5rem; height: 3.5rem; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; cursor: zoom-in; }
+.pic-thumb.large { width: 5.5rem; height: 5.5rem; }
+.pic-thumb:hover, .pic-thumb:focus-visible { border-color: var(--accent); }
+.pic-thumb img, .pic-mini { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pic-mini { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+.pic-view { align-items: center; flex-direction: column; gap: 0.8rem; padding: 16px; z-index: 30; background: rgba(5, 2, 15, 0.85); }
+.pic-view img, .pic-view video { max-width: 100%; max-height: calc(100dvh - 6rem); object-fit: contain; border-radius: 12px; background: #fff; }
+.crop { position: relative; overflow: hidden; margin-inline: auto; border-radius: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.crop img { display: block; width: 100%; height: auto; pointer-events: none; }
+.crop-frame { position: absolute; border: 2px solid #fff; box-shadow: 0 0 0 9999px rgba(5, 2, 15, 0.6); cursor: move; touch-action: none; }
+#crop-size { width: 100%; accent-color: var(--accent); }
+.pic-thumb { position: relative; }
+.pic-play { position: absolute; right: 0.2rem; bottom: 0.2rem; display: grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 999px; background: rgba(5, 2, 15, 0.7); color: #fff; }
+.pic-play svg { width: 0.75rem; height: 0.75rem; fill: currentColor; }
+.pic-thumb.large .pic-play { width: 1.7rem; height: 1.7rem; }
+.pic-thumb.large .pic-play svg { width: 1rem; height: 1rem; }

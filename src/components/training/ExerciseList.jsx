@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
-import { Sheet, TYPE_LABEL, similarNames, useToast } from './ui.jsx';
+import { Picture, Sheet, TYPE_LABEL, pictureUrl, similarNames, useToast } from './ui.jsx';
+import { CropStep, PictureButton } from './PictureUpload.jsx';
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -22,19 +23,28 @@ function ExerciseSheet({ id, exercises, usage, people, onDone, onClose }) {
   const others = Object.entries(exercises).filter(([oid, o]) => oid !== id && o.type === x.type).sort((a, b) => a[1].name.localeCompare(b[1].name));
   const [into, setInto] = useState('');
   const [confirm, setConfirm] = useState(null);
+  const [picked, setPicked] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const send = async body => {
+  const send = async (body, path = 'exercises') => {
     setBusy(true);
     setError('');
     try {
-      onDone(await api('exercises', { method: 'POST', body: { id, ...body } }));
+      onDone(await api(path, { method: 'POST', body: { id, ex: id, ...body } }));
     } catch (err) {
       setError(err.message);
       setBusy(false);
     }
   };
+
+  if (picked) {
+    return (
+      <Sheet title={`Picture for ${x.name}`} onClose={onClose}>
+        <CropStep ex={id} name={x.name} picked={picked} onDone={onDone} onCancel={() => setPicked(null)} />
+      </Sheet>
+    );
+  }
 
   if (confirm) {
     const target = exercises[into];
@@ -57,6 +67,11 @@ function ExerciseSheet({ id, exercises, usage, people, onDone, onClose }) {
   return (
     <Sheet title={x.name} onClose={onClose}>
       <p class="small muted" style={{ margin: 0 }}>{TYPE_LABEL[x.type]} · {usageText(u, people)}{x.hidden ? ' · Hidden' : ''}</p>
+      <div class="row">
+        {x.picture ? <Picture ex={id} x={x} large /> : <span class="small muted">No picture yet.</span>}
+        <PictureButton label={x.picture ? 'Replace picture' : 'Add picture'} disabled={busy} onPicked={setPicked} onError={setError} />
+        {x.picture && <button class="btn" disabled={busy} onClick={() => send({ action: 'remove' }, 'picture')}>Remove picture</button>}
+      </div>
       <form class="stack" onSubmit={e => { e.preventDefault(); send({ action: 'rename', name }); }}>
         <label class="label" for="ex-name"><span class="meta">Name</span>
           <input id="ex-name" class="input" autocomplete="off" value={name} onInput={e => setName(e.currentTarget.value)} /></label>
@@ -128,7 +143,7 @@ function ExerciseBody() {
 
   const changed = data => {
     setExercises(data.exercises);
-    setUsage(data.usage);
+    if (data.usage) setUsage(data.usage);
     setOpen(null);
     toast(data.message);
   };
@@ -164,7 +179,10 @@ function ExerciseBody() {
         <div class="list">
           {list.map(([id, x]) => (
             <button class="list-btn" key={id} onClick={() => setOpen(id)}>
-              <span><b>{x.name}</b><span class="sub">{usageText(usage[id], people)}</span></span>
+              <span class="ex-title">
+                {x.picture && <img class="pic-mini" src={pictureUrl(id, x.picture, 'thumb')} alt="" loading="lazy" />}
+                <span><b>{x.name}</b><span class="sub">{usageText(usage[id], people)}</span></span>
+              </span>
               <span class="row" style={{ flexWrap: 'nowrap' }}>{x.hidden && <span class="chip">Hidden</span>}<span class="chip">{TYPE_LABEL[x.type]}</span></span>
             </button>
           ))}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { api, logFor } from './api.js';
 import Shell from './Shell.jsx';
-import { Icon, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
+import { Icon, Picture, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
 
 const FIELDS = { weight: ['reps', 'kg'], body: ['reps'], timed: ['secs'], band: ['band', 'reps'] };
 const UNITS = { reps: 'reps', kg: 'kg', secs: 'sec', band: '' };
@@ -209,9 +209,12 @@ function WorkoutBody({ me }) {
     return (
       <article class="card" key={extra ? `x-${ex}` : ex}>
         <div class="ex-head">
-          <div>
-            <div class="ex-name">{nameOf(ex)}</div>
-            {(extra || type !== 'weight') && <div class="row" style={{ marginTop: '0.25rem' }}>{extra && <span class="chip extra">Extra</span>}{type !== 'weight' && <span class="chip">{TYPE_LABEL[type]}</span>}</div>}
+          <div class="ex-title">
+            <Picture ex={ex} x={exercises[ex]} />
+            <div>
+              <div class="ex-name">{nameOf(ex)}</div>
+              {(extra || type !== 'weight') && <div class="row" style={{ marginTop: '0.25rem' }}>{extra && <span class="chip extra">Extra</span>}{type !== 'weight' && <span class="chip">{TYPE_LABEL[type]}</span>}</div>}
+            </div>
           </div>
           <div class="target">{type === 'weight' && !extra && view.phase.reps ? <>{sets} × {view.phase.reps}<small>sets × reps</small></> : <>{sets} set{sets > 1 ? 's' : ''}<small>no target</small></>}</div>
         </div>
