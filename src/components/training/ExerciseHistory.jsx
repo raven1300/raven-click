@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
-import { Icon, Picture, TYPE_LABEL, fmtSet, longDate, shortDate } from './ui.jsx';
+import { Icon, Picture, TYPE_LABEL, fmtSet, fmtTime, longDate, shortDate } from './ui.jsx';
 
-const COLUMNS = { weight: ['Reps', 'Weight'], body: ['Reps'], timed: ['Seconds'], band: ['Reps', 'Band'] };
-const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg`] : type === 'timed' ? [s.secs] : type === 'band' ? [s.reps, s.band] : [s.reps]);
-const CHART_LABEL = { weight: 'Heaviest weight (kg)', body: 'Most reps', timed: 'Longest hold (seconds)', band: 'Most reps' };
+const COLUMNS = { weight: ['Reps', 'Weight'], body: ['Reps'], timed: ['Time'], band: ['Reps', 'Band'] };
+const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg`] : type === 'timed' ? [fmtTime(s.secs)] : type === 'band' ? [s.reps, s.band] : [s.reps]);
+const CHART_LABEL = { weight: 'Heaviest weight (kg)', body: 'Most reps', timed: 'Longest hold (min:sec)', band: 'Most reps' };
 const plotValue = (type, s) => (type === 'weight' ? s.kg : type === 'timed' ? s.secs : s.reps);
 
 // Same order as the server's PB rule: weight is heavier then more reps; band counts "No band" first.
@@ -66,10 +66,12 @@ function Chart({ data }) {
   if (pts.length < 2) return <p class="muted">The chart appears after two workouts.</p>;
 
   const W = 340, H = 200, L = 36, R = 14, T = 20, B = 28;
-  // Round-number gridlines (for example 55, 60, 65, 70), about four of them.
+  // Round-number gridlines (for example 55, 60, 65, 70), about four of them. Times step in
+  // whole seconds or minutes, so the labels read 0:30, 1:00, 1:30.
   const values = pts.map(p => plotValue(type, p.top));
   const span = Math.max(Math.max(...values) - Math.min(...values), 1);
-  const step = [1, 2, 2.5, 5, 10, 20, 25, 50, 100].find(s => span / s <= 3) || 200;
+  const steps = type === 'timed' ? [1, 2, 5, 10, 15, 30, 60, 120, 300, 600] : [1, 2, 2.5, 5, 10, 20, 25, 50, 100];
+  const step = steps.find(s => span / s <= 3) || steps[steps.length - 1] * 2;
   const lo = Math.max(0, Math.floor(Math.min(...values) / step - 0.5) * step);
   const hi = Math.ceil(Math.max(...values) / step + 0.5) * step;
   const ticks = Array.from({ length: Math.round((hi - lo) / step) + 1 }, (_, k) => lo + k * step);
@@ -90,7 +92,7 @@ function Chart({ data }) {
         {ticks.map(v => (
           <g key={v}>
             <line class="grid" x1={L} x2={W - R} y1={y(v)} y2={y(v)} />
-            <text x={L - 6} y={y(v) + 4} text-anchor="end">{v}</text>
+            <text x={L - 6} y={y(v) + 4} text-anchor="end">{type === 'timed' ? fmtTime(v) : v}</text>
           </g>
         ))}
         <line class="cursor" x1={x(sel)} x2={x(sel)} y1={T - 6} y2={H - B} />

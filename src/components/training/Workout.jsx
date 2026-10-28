@@ -3,16 +3,22 @@ import { api, logFor } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, Picture, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
 
-const FIELDS = { weight: ['reps', 'kg'], body: ['reps'], timed: ['secs'], band: ['band', 'reps'] };
-const UNITS = { reps: 'reps', kg: 'kg', secs: 'sec', band: '' };
+const FIELDS = { weight: ['reps', 'kg'], body: ['reps'], timed: ['mins', 'secs'], band: ['band', 'reps'] };
+const UNITS = { reps: 'reps', kg: 'kg', mins: 'min', secs: 'sec', band: '' };
 const REQUIRED = { weight: ['reps', 'kg'], body: ['reps'], timed: ['secs'], band: ['reps'] };
 const MISSING_WORD = { reps: 'reps', kg: 'the weight', secs: 'the time' };
 const STATE_CHIP = { none: ['', 'Not started'], progress: ['progress', 'In progress'], done: ['done', 'Done'], incomplete: ['incomplete', 'Finished early'] };
 
 const rowKey = (ex, set, extra) => `${ex}|${set}|${extra ? 'x' : ''}`;
 const hasTyped = d => !!d && Object.values(d).some(v => v !== '' && v != null);
-const missing = (type, d) => REQUIRED[type].filter(f => !d || d[f] === '' || d[f] == null || Number.isNaN(Number(d[f])));
-const toValues = (type, d) => Object.fromEntries(FIELDS[type].map(f => [f, f === 'band' ? (d[f] || '') : Number(d[f])]));
+// A time is typed as minutes and seconds (either box can be left empty) and saved as seconds.
+const totalSecs = d => (Number(d?.mins) || 0) * 60 + (Number(d?.secs) || 0);
+const missing = (type, d) => (type === 'timed'
+  ? (totalSecs(d) > 0 && !['mins', 'secs'].some(f => Number.isNaN(Number(d[f] ?? ''))) ? [] : ['secs'])
+  : REQUIRED[type].filter(f => !d || d[f] === '' || d[f] == null || Number.isNaN(Number(d[f]))));
+const toValues = (type, d) => (type === 'timed' ? { secs: totalSecs(d) }
+  : Object.fromEntries(FIELDS[type].map(f => [f, f === 'band' ? (d[f] || '') : Number(d[f])])));
+const loggedValue = (s, f) => String(f === 'mins' ? Math.floor(s.secs / 60) : f === 'secs' && s.secs != null ? s.secs % 60 : s[f] ?? '');
 const dayLabel = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Melbourne' }).format(new Date());
 
@@ -77,8 +83,13 @@ function WorkoutBody({ me }) {
   const typeOf = ex => exercises[ex]?.type || 'weight';
   const nameOf = ex => exercises[ex]?.name || 'Removed exercise';
 
+  // The workout isn't stored until something is logged, so a date picked before then waits here
+  // and goes with the first save.
+  const [startDate, setStartDate] = useState('');
+  const startRef = useRef('');
   const post = async (action, payload = {}) => {
-    const data = await api('session', { method: 'POST', body: { ...query, action, ...payload } });
+    const pending = !latest.current.view.session && startRef.current ? { startDate: startRef.current } : {};
+    const data = await api('session', { method: 'POST', body: { ...query, action, ...pending, ...payload } });
     setView(data);
     return data;
   };
@@ -178,9 +189,9 @@ function WorkoutBody({ me }) {
                 inputmode={f === 'kg' ? 'decimal' : f === 'band' ? undefined : 'numeric'}
                 list={f === 'band' && bands.length ? `bands-${row.ex}` : undefined}
                 placeholder={f === 'band' ? 'band' : '–'}
-                value={logged ? String(logged[f] ?? '') : (draft[f] ?? '')}
+                value={logged ? loggedValue(logged, f) : (draft[f] ?? '')}
                 disabled={!!logged || !canEdit}
-                aria-label={`Set ${row.set + 1} ${f === 'secs' ? 'seconds' : f}`}
+                aria-label={`Set ${row.set + 1} ${f === 'secs' ? 'seconds' : f === 'mins' ? 'minutes' : f}`}
                 onFocus={() => onFocusRow(row)}
                 onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setRemoved(r => { const n = { ...r }; delete n[key]; return n; }); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); }}
               />
@@ -263,8 +274,13 @@ function WorkoutBody({ me }) {
         <div class="row">
           <span class={`chip ${chipClass}`}>{chipText}</span>
           <label class="meta" for="trained-on">Trained on</label>
-          <input id="trained-on" class="date-in" type="date" value={session?.date || todayIso()} disabled={!canEdit || !session}
-            onChange={e => e.currentTarget.value && post('date', { date: e.currentTarget.value }).then(() => toast('Date changed')).catch(err => toast(err.message))} />
+          <input id="trained-on" class="date-in" type="date" value={session?.date || startDate || todayIso()} disabled={!canEdit}
+            onChange={e => {
+              const date = e.currentTarget.value;
+              if (!date) return;
+              if (session) { post('date', { date }).then(() => toast('Date changed')).catch(err => toast(err.message)); return; }
+              startRef.current = date; setStartDate(date); toast('Date set. It\'s saved with the first set you log.');
+            }} />
         </div>
         {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it. To log for them, press "Log for ${view.person.name}" on their block.` : 'This block has finished, so this workout is read-only.'}</p>}
       </div>

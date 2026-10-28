@@ -92,6 +92,8 @@ function findSet(session, ex, set, extra) {
   return session.sets.findIndex(s => s.ex === ex && s.set === set && !!s.extra === !!extra);
 }
 
+const validDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) && !Number.isNaN(Date.parse(d));
+
 function checkSetSlot(session, ex, set, extra) {
   const slot = extra ? session.extras.find(e => e.ex === ex) : session.plan.find(it => it.ex === ex);
   if (!slot || !Number.isInteger(set) || set < 0 || set >= slot.sets) throw new UserError(400, 'That set isn\'t part of this workout.');
@@ -117,7 +119,10 @@ export default async (req, context) => handle(async () => {
   const { key, workout } = located;
 
   const sessions = (await changeSessions(located.personId, located.block.num, sessions => {
+    const isNew = !sessions[key];
     const session = sessions[key] || (sessions[key] = newSession(workout));
+    // A date picked before anything was logged comes with the first save.
+    if (isNew && validDate(input.startDate)) session.date = input.startDate;
 
     if (input.action === 'save-sets') {
       const sets = Array.isArray(input.sets) ? input.sets.slice(0, 50) : [];
@@ -141,7 +146,7 @@ export default async (req, context) => handle(async () => {
       const text = String(input.text || '').trim().slice(0, 500);
       if (text) session.notes[noteKey] = text; else delete session.notes[noteKey];
     } else if (input.action === 'date') {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(input.date)) || Number.isNaN(Date.parse(input.date))) throw new UserError(400, 'That isn\'t a valid date.');
+      if (!validDate(input.date)) throw new UserError(400, 'That isn\'t a valid date.');
       session.date = input.date;
     } else if (input.action === 'clear') {
       if (!located.canClear) throw new UserError(403, `Only ${user.people[located.personId].name} or the admin can clear this workout.`);

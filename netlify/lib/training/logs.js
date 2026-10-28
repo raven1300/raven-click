@@ -74,7 +74,7 @@ export function cleanValues(type, values = {}) {
   const reps = Number(values.reps);
   if (type === 'timed') {
     const secs = Number(values.secs);
-    if (!wholeNumber(secs, 1, 36000)) throw new UserError(400, 'Enter the time in whole seconds.');
+    if (!wholeNumber(secs, 1, 36000)) throw new UserError(400, 'Enter the time in whole minutes and seconds.');
     return { secs };
   }
   if (!wholeNumber(reps, 0, 1000)) throw new UserError(400, 'Enter reps as a whole number.');
