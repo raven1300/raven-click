@@ -30,20 +30,20 @@ async function everything() {
   return { people, blocks, logs };
 }
 
-// Per exercise: logged sets, who logged them, and how many blocks use it (planned or logged).
+// Per exercise: how many blocks use it, for anyone, queued, running or finished (planned, or as an
+// extra in a workout). Logged sets always sit in one of those blocks.
 function usage({ blocks, logs }) {
   const result = {};
-  const at = ex => (result[ex] ||= { sets: 0, people: new Set(), blocks: new Set() });
+  const at = ex => (result[ex] ||= new Set());
   for (const [person, list] of Object.entries(blocks)) {
-    for (const b of list) for (const w of b.workouts) for (const it of w.items) at(it.ex).blocks.add(`${person}/${b.num}`);
+    for (const b of list) for (const w of b.workouts) for (const it of w.items) at(it.ex).add(`${person}/${b.num}`);
   }
   for (const log of logs) {
     for (const session of Object.values(log.sessions)) {
-      for (const it of [...session.plan, ...session.extras]) at(it.ex).blocks.add(`${log.person}/${log.num}`);
-      for (const s of session.sets) { at(s.ex).sets++; at(s.ex).people.add(log.person); }
+      for (const it of [...session.plan, ...session.extras]) at(it.ex).add(`${log.person}/${log.num}`);
     }
   }
-  return Object.fromEntries(Object.entries(result).map(([ex, u]) => [ex, { sets: u.sets, people: [...u.people], blocks: u.blocks.size }]));
+  return Object.fromEntries(Object.entries(result).map(([ex, found]) => [ex, { blocks: found.size }]));
 }
 
 // Two exercises can't be merged where both are planned in one workout, or both are extras in one

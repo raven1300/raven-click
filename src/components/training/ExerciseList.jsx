@@ -6,17 +6,11 @@ import { CropStep, PictureButton } from './PictureUpload.jsx';
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-// "214 sets · Nick, Sam · in 3 blocks", so similar entries are easy to compare.
-function usageText(u, people) {
-  if (!u) return 'Not used yet';
-  const parts = [u.sets ? plural(u.sets, 'set') : 'No sets logged'];
-  if (u.people.length) parts.push(u.people.map(id => people[id]?.name || 'Someone').join(', '));
-  if (u.blocks) parts.push(`in ${plural(u.blocks, 'block')}`);
-  return parts.join(' · ');
-}
+// "Used in 3 blocks": anyone's blocks, queued, running or finished.
+const usageText = u => (u ? `Used in ${plural(u.blocks, 'block')}` : 'Not used yet');
 
 // Rename, hide, merge or delete one exercise. `confirm` is the merge or delete waiting for a yes.
-function ExerciseSheet({ id, exercises, usage, people, onDone, onClose }) {
+function ExerciseSheet({ id, exercises, usage, onDone, onClose }) {
   const x = exercises[id];
   const u = usage[id];
   const [name, setName] = useState(x.name);
@@ -66,7 +60,7 @@ function ExerciseSheet({ id, exercises, usage, people, onDone, onClose }) {
 
   return (
     <Sheet title={x.name} onClose={onClose}>
-      <p class="small muted" style={{ margin: 0 }}>{TYPE_LABEL[x.type]} · {usageText(u, people)}{x.hidden ? ' · Hidden' : ''}</p>
+      <p class="small muted" style={{ margin: 0 }}>{TYPE_LABEL[x.type]} · {usageText(u)}{x.hidden ? ' · Hidden' : ''}</p>
       <div class="row">
         {x.picture ? <Picture ex={id} x={x} large /> : <span class="small muted">No picture yet.</span>}
         <PictureButton label={x.picture ? 'Replace picture' : 'Add picture'} disabled={busy} onPicked={setPicked} onError={setError} />
@@ -104,7 +98,6 @@ function ExerciseSheet({ id, exercises, usage, people, onDone, onClose }) {
 function ExerciseBody() {
   const [exercises, setExercises] = useState(null);
   const [usage, setUsage] = useState({});
-  const [people, setPeople] = useState({});
   const [loadError, setLoadError] = useState('');
   const [query, setQuery] = useState('');
   const [name, setName] = useState('');
@@ -116,7 +109,6 @@ function ExerciseBody() {
 
   useEffect(() => {
     api('exercises?usage=1').then(d => { setExercises(d.exercises); setUsage(d.usage || {}); }).catch(err => setLoadError(err.message));
-    api('people').then(d => setPeople(Object.fromEntries(d.people.map(p => [p.id, p])))).catch(() => {});
   }, []);
 
   if (loadError) return <p class="error-box">{loadError}</p>;
@@ -181,7 +173,7 @@ function ExerciseBody() {
             <button class="list-btn" key={id} onClick={() => setOpen(id)}>
               <span class="ex-title">
                 {x.picture && <img class="pic-mini" src={pictureUrl(id, x.picture, 'thumb')} alt="" loading="lazy" />}
-                <span><b>{x.name}</b><span class="sub">{usageText(usage[id], people)}</span></span>
+                <span><b>{x.name}</b><span class="sub">{usageText(usage[id])}</span></span>
               </span>
               <span class="row" style={{ flexWrap: 'nowrap' }}>{x.hidden && <span class="chip">Hidden</span>}<span class="chip">{TYPE_LABEL[x.type]}</span></span>
             </button>
@@ -189,7 +181,7 @@ function ExerciseBody() {
           {!list.length && <p class="muted" style={{ margin: 0 }}>No exercises match.</p>}
         </div>
       </section>
-      {open && exercises[open] && <ExerciseSheet id={open} exercises={exercises} usage={usage} people={people} onDone={changed} onClose={() => setOpen(null)} />}
+      {open && exercises[open] && <ExerciseSheet id={open} exercises={exercises} usage={usage} onDone={changed} onClose={() => setOpen(null)} />}
       {toastView}
     </div>
   );
