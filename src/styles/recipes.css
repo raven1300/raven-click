@@ -55,6 +55,11 @@ body {
   line-height: 1.6;
 }
 
+/* A recipe-coloured edge under the shared site header, so it's clear where the header ends */
+.site-header {
+  border-bottom: 4px solid var(--primary);
+}
+
 /* Text column for standard recipe pages; the site header sits above it at full width */
 .recipe-container {
   margin: 0 auto;
