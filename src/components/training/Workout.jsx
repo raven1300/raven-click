@@ -83,8 +83,13 @@ function WorkoutBody({ me }) {
   const typeOf = ex => exercises[ex]?.type || 'weight';
   const nameOf = ex => exercises[ex]?.name || 'Removed exercise';
 
+  // The workout isn't stored until something is logged, so a date picked before then waits here
+  // and goes with the first save.
+  const [startDate, setStartDate] = useState('');
+  const startRef = useRef('');
   const post = async (action, payload = {}) => {
-    const data = await api('session', { method: 'POST', body: { ...query, action, ...payload } });
+    const pending = !latest.current.view.session && startRef.current ? { startDate: startRef.current } : {};
+    const data = await api('session', { method: 'POST', body: { ...query, action, ...pending, ...payload } });
     setView(data);
     return data;
   };
@@ -269,8 +274,13 @@ function WorkoutBody({ me }) {
         <div class="row">
           <span class={`chip ${chipClass}`}>{chipText}</span>
           <label class="meta" for="trained-on">Trained on</label>
-          <input id="trained-on" class="date-in" type="date" value={session?.date || todayIso()} disabled={!canEdit || !session}
-            onChange={e => e.currentTarget.value && post('date', { date: e.currentTarget.value }).then(() => toast('Date changed')).catch(err => toast(err.message))} />
+          <input id="trained-on" class="date-in" type="date" value={session?.date || startDate || todayIso()} disabled={!canEdit}
+            onChange={e => {
+              const date = e.currentTarget.value;
+              if (!date) return;
+              if (session) { post('date', { date }).then(() => toast('Date changed')).catch(err => toast(err.message)); return; }
+              startRef.current = date; setStartDate(date); toast('Date set. It\'s saved with the first set you log.');
+            }} />
         </div>
         {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it. To log for them, press "Log for ${view.person.name}" on their block.` : 'This block has finished, so this workout is read-only.'}</p>}
       </div>

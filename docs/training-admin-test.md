@@ -146,6 +146,7 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] Only seconds (for example `45`) saves 0:45. Ticking with both boxes empty asks for the time.
 - [ ] Times logged before this change now show as min:sec: on the workout's "Last" line, in History's list, Results and Personal best, and on the Chart (its labels read like 1:30, 2:00).
 - [ ] The CSV export still has a plain **Seconds** column (105 for 1:45).
+- [ ] Open a workout you haven't started and change **Trained on** to a past date before logging anything. It says the date is saved with the first set. Log a set and reload: the date is kept, and the tile shows that date.
 
 ## 7. Friend access (stage 1)
 
