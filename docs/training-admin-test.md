@@ -72,7 +72,7 @@ Run these as the test person, on a phone, against a running block.
 - [ ] Type a set without ticking, then tick a later set. Both save ("Also saved…").
 - [ ] Untick a set. Its numbers stay with "Removed. Tap ✓ to save it again". Moving to another set, ticking a later set, or leaving doesn't save it again, and leaving doesn't ask about it. Re-ticking it saves it.
 - [ ] Tick with a box empty. It asks for the missing number.
-- [ ] Try timed (seconds) and band (band + reps) exercises. Leaving the band empty saves "No band".
+- [ ] Try timed (min + sec boxes) and band (band + reps) exercises. For a time, `1` and `45` saves 1:45, and either box can be left empty (`45` sec alone is 0:45). Leaving the band empty saves "No band".
 - [ ] Add a note, change the "Trained on" date, and reload. Both are kept.
 - [ ] **+ Add exercise** adds an extra with 1 set. **+ Set** and **− Set** work, and the extra doesn't change the tile's count.
 - [ ] Press the back link with newly typed numbers. It lists the sets and asks "Save them, then leave", "Discard them and leave" or "Stay".
@@ -139,6 +139,13 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] Upload a short MP4 clip (under 4 MB). It gets a play badge and plays silently on a loop when tapped. Check this on your iPhone too, since Safari plays video differently. A video straight from the iPhone camera is likely to be refused, as too big or as HEVC, with a message saying why.
 - [ ] Choose an SVG file: it's refused. Choose a very small picture: you're warned it may look blurry, but can still use it.
 - [ ] As a friend, the thumbnails show but there's no way to change them.
+
+## 6g. Times in minutes and seconds
+
+- [ ] In a workout with a timed exercise, each set has **min** and **sec** boxes, with the number keypad on your phone. `1` and `45` saves, and the boxes keep showing 1 and 45.
+- [ ] Only seconds (for example `45`) saves 0:45. Ticking with both boxes empty asks for the time.
+- [ ] Times logged before this change now show as min:sec: on the workout's "Last" line, in History's list, Results and Personal best, and on the Chart (its labels read like 1:30, 2:00).
+- [ ] The CSV export still has a plain **Seconds** column (105 for 1:45).
 
 ## 7. Friend access (stage 1)
 

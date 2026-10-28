@@ -23,9 +23,12 @@ export const longDate = s => (s ? parseDay(s).toLocaleDateString('en-AU', { day:
 
 export const shortDate = s => parseDay(s).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
 
+// Times are stored in seconds and shown as minutes:seconds, for example 1:45 or 0:45.
+export const fmtTime = secs => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+
 export function fmtSet(type, s) {
   if (type === 'weight') return `${s.reps} × ${s.kg} kg`;
-  if (type === 'timed') return `${s.secs} s`;
+  if (type === 'timed') return fmtTime(s.secs);
   if (type === 'band') return `${s.reps} reps · ${s.band}`;
   return `${s.reps} reps`;
 }
