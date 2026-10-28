@@ -115,7 +115,7 @@ You need two test people (say Sam and Jess) with running blocks.
 
 ## 6e. Tidying the exercise list and exporting (stage 5)
 
-- [ ] On **Exercise list**, each exercise shows its usage, for example "2 sets · Sam · in 1 block", or "Not used yet".
+- [ ] On **Exercise list**, each exercise says how many blocks use it (anyone's, queued, running or finished), for example "Used in 3 blocks", or "Not used yet".
 - [ ] Add two test exercises of the same type, for example "Test Squat" and "Test Squat 2". Put "Test Squat 2" in Sam's block (or as an extra) and log a set with a note.
 - [ ] Tap an exercise: the sheet offers **Save name**, **Merge into**, **Hide** and, only if it's never been used, **Delete**. Rename one: its history and blocks keep the new name.
 - [ ] Merge "Test Squat 2" into "Test Squat". The confirmation explains what happens. Afterwards "Test Squat 2" is gone, Sam's block and workout show "Test Squat", the logged set and note are there, and History shows it under "Test Squat".
