@@ -31,7 +31,7 @@ Agreed 2026-10-25. The site should make it easy to add more features later.
 3. [x] Placeholder `/training` page with its own layout (`src/layouts/training/`) and stylesheet (`src/styles/training.css`).
 
 ### Later
-- Recipes stylesheet: add a top border or edge in a recipe colour where the recipe page meets the charcoal site header, so it's clear where the header ends.
+- [x] Recipes stylesheet: a recipe-coloured edge under the charcoal site header (done 2026-10-28).
 
 ## How it works
 
