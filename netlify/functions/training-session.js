@@ -134,13 +134,19 @@ export default async (req, context) => handle(async () => {
         const at = findSet(session, s.ex, s.set, extra);
         if (at >= 0) checkCanChange(user, located.personId, session.sets[at]);
         // Whoever saves a set last owns it; `by` is only stored when that isn't the person themselves.
-        const entry = { ex: s.ex, set: s.set, extra, ...cleanValues(exercises[s.ex].type, s.values), ...(user.id !== located.personId ? { by: user.id } : {}) };
+        const entry = { ex: s.ex, set: s.set, extra, ...cleanValues(exercises[s.ex].type, s.values), ...(s.up && exercises[s.ex].type === 'weight' ? { up: true } : {}), ...(user.id !== located.personId ? { by: user.id } : {}) };
         if (at >= 0) session.sets[at] = entry; else session.sets.push(entry);
       }
     } else if (input.action === 'unsave-set') {
       const at = findSet(session, input.ex, input.set, input.extra);
       if (at >= 0) checkCanChange(user, located.personId, session.sets[at]);
       if (at >= 0) session.sets.splice(at, 1);
+    } else if (input.action === 'mark-up') {
+      // "Increase next time" on a saved weight set. Separate from the numbers, so charts and PBs ignore it.
+      const at = findSet(session, input.ex, input.set, input.extra);
+      if (at < 0 || exercises[input.ex]?.type !== 'weight') throw new UserError(400, 'That set isn\'t saved.');
+      checkCanChange(user, located.personId, session.sets[at]);
+      if (input.up) session.sets[at].up = true; else delete session.sets[at].up;
     } else if (input.action === 'note') {
       const noteKey = input.extra ? `${input.ex}|x` : input.ex;
       const text = String(input.text || '').trim().slice(0, 500);

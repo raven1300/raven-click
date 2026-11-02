@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { Calendar } from 'lucide-preact';
 import { api, logFor } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, Picture, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
@@ -19,6 +20,7 @@ const missing = (type, d) => (type === 'timed'
 const toValues = (type, d) => (type === 'timed' ? { secs: totalSecs(d) }
   : Object.fromEntries(FIELDS[type].map(f => [f, f === 'band' ? (d[f] || '') : Number(d[f])])));
 const loggedValue = (s, f) => String(f === 'mins' ? Math.floor(s.secs / 60) : f === 'secs' && s.secs != null ? s.secs % 60 : s[f] ?? '');
+const ddmmyyyy = iso => iso.split('-').reverse().join('/');
 const dayLabel = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Melbourne' }).format(new Date());
 
@@ -63,6 +65,12 @@ function WorkoutBody({ me }) {
   // Rows the person unticked: their numbers stay visible, but nothing saves them again unless the person edits or re-ticks.
   const [removed, setRemoved] = useState({});
   const [errors, setErrors] = useState({});
+  // "Increase next time" marks on sets that aren't saved yet. Saved sets carry their own `up`.
+  const [ups, setUps] = useState({});
+  // The workout isn't stored until something is logged, so a date picked before then waits here
+  // and goes with the first save.
+  const [startDate, setStartDate] = useState('');
+  const startRef = useRef('');
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState({});
   const [openNotes, setOpenNotes] = useState({});
@@ -70,7 +78,7 @@ function WorkoutBody({ me }) {
   const [toast, toastView] = useToast();
   const focused = useRef(null);
   const latest = useRef({});
-  latest.current = { view, drafts, removed };
+  latest.current = { view, drafts, removed, ups };
 
   useEffect(() => {
     api(`session?${new URLSearchParams(query)}`).then(setView).catch(err => setLoadError(err.message));
@@ -83,10 +91,6 @@ function WorkoutBody({ me }) {
   const typeOf = ex => exercises[ex]?.type || 'weight';
   const nameOf = ex => exercises[ex]?.name || 'Removed exercise';
 
-  // The workout isn't stored until something is logged, so a date picked before then waits here
-  // and goes with the first save.
-  const [startDate, setStartDate] = useState('');
-  const startRef = useRef('');
   const post = async (action, payload = {}) => {
     const pending = !latest.current.view.session && startRef.current ? { startDate: startRef.current } : {};
     const data = await api('session', { method: 'POST', body: { ...query, action, ...pending, ...payload } });
@@ -98,13 +102,14 @@ function WorkoutBody({ me }) {
     setDrafts(d => { const next = { ...d }; keys.forEach(k => delete next[k]); return next; });
     setErrors(e => { const next = { ...e }; keys.forEach(k => delete next[k]); return next; });
     setRemoved(r => { const next = { ...r }; keys.forEach(k => delete next[k]); return next; });
+    setUps(u => { const next = { ...u }; keys.forEach(k => delete next[k]); return next; });
   };
 
   // Saves several rows in one request. Rows must already be complete.
   const saveRows = async rows => {
     const keys = rows.map(r => rowKey(r.ex, r.set, r.extra));
     try {
-      await post('save-sets', { sets: rows.map(r => ({ ex: r.ex, set: r.set, extra: r.extra, values: toValues(typeOf(r.ex), latest.current.drafts[rowKey(r.ex, r.set, r.extra)]) })) });
+      await post('save-sets', { sets: rows.map(r => ({ ex: r.ex, set: r.set, extra: r.extra, values: toValues(typeOf(r.ex), latest.current.drafts[rowKey(r.ex, r.set, r.extra)]), up: !!latest.current.ups[rowKey(r.ex, r.set, r.extra)] })) });
       clearRows(keys);
       return true;
     } catch (err) {
@@ -131,8 +136,9 @@ function WorkoutBody({ me }) {
     if (logged) {
       try {
         await post('unsave-set', row);
-        setDrafts(d => ({ ...d, [key]: Object.fromEntries(FIELDS[typeOf(row.ex)].map(f => [f, String(logged[f] ?? '')])) }));
+        setDrafts(d => ({ ...d, [key]: Object.fromEntries(FIELDS[typeOf(row.ex)].map(f => [f, loggedValue(logged, f)])) }));
         setRemoved(r => ({ ...r, [key]: true }));
+        setUps(u => ({ ...u, [key]: !!logged.up }));
       } catch (err) { setRowError([key], err.message); }
       setBusy(false);
       return;
@@ -141,6 +147,16 @@ function WorkoutBody({ me }) {
     if (gaps.length) { setRowError([key], `Enter ${gaps.map(g => MISSING_WORD[g]).join(' and ')} first.`); setBusy(false); return; }
     const earlier = readyBefore(row);
     if (await saveRows([...earlier, row]) && earlier.length) toast(`Also saved: ${earlier.map(r => `${nameOf(r.ex)} set ${r.set + 1}`).join(', ')}`);
+    setBusy(false);
+  };
+
+  // Marks a set "increase next time". A saved set changes straight away; otherwise it goes with the save.
+  const toggleUp = async row => {
+    const key = rowKey(row.ex, row.set, row.extra);
+    const logged = findLogged(view, row);
+    if (!logged) { setUps(u => ({ ...u, [key]: !u[key] })); return; }
+    setBusy(true);
+    try { await post('mark-up', { ...row, up: !logged.up }); } catch (err) { setRowError([key], err.message); }
     setBusy(false);
   };
 
@@ -198,6 +214,10 @@ function WorkoutBody({ me }) {
               {UNITS[f] && <span>{UNITS[f]}</span>}
             </label>
           ))}
+          {type === 'weight' && (() => {
+            const marked = logged ? !!logged.up : !!ups[key];
+            return <button type="button" class="up-btn" aria-pressed={marked ? 'true' : 'false'} aria-label={`Increase set ${row.set + 1} next time`} title="Increase next time" disabled={!canEdit || busy || (logged && !canChange(logged))} onClick={() => toggleUp(row)}>+</button>;
+          })()}
           {bands.length > 0 && <datalist id={`bands-${row.ex}`}>{bands.map(b => <option key={b} value={b} />)}</datalist>}
         </div>
         <button class="tick" aria-pressed={logged ? 'true' : 'false'} aria-label={`${logged ? 'Untick' : 'Save'} set ${row.set + 1}`} disabled={!canEdit || busy || (logged && !canChange(logged))} onClick={() => tick(row)}>✓</button>
@@ -231,7 +251,7 @@ function WorkoutBody({ me }) {
         </div>
         <div class="last">
           {earlierToday.length ? `Earlier in this workout · ${earlierToday.map(s => fmtSet(type, s)).join(', ')}`
-            : last ? `Last: ${dayLabel(last.date)} · ${last.sets.map(s => fmtSet(type, s)).join(', ')}`
+            : last ? `Last: ${dayLabel(last.date)} · ${fmtSet(type, last.sets[last.sets.length - 1])}${type === 'weight' && last.sets.some(s => s.up) ? ' +' : ''}`
             : 'First time doing this one. No history yet.'}
         </div>
         <div class="sets">{Array.from({ length: sets }, (_, set) => setRow({ ex, set, extra }))}</div>
@@ -274,13 +294,18 @@ function WorkoutBody({ me }) {
         <div class="row">
           <span class={`chip ${chipClass}`}>{chipText}</span>
           <label class="meta" for="trained-on">Trained on</label>
-          <input id="trained-on" class="date-in" type="date" value={session?.date || startDate || todayIso()} disabled={!canEdit}
+          {/* Date boxes follow each phone's region, so the box is invisible over our own dd/mm/yyyy text. */}
+          <span class="date-in">
+            <Calendar aria-hidden="true" />{ddmmyyyy(session?.date || startDate || todayIso())}
+            <input id="trained-on" type="date" value={session?.date || startDate || todayIso()} disabled={!canEdit}
+            onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* The browser opens its own picker. */ } }}
             onChange={e => {
               const date = e.currentTarget.value;
               if (!date) return;
               if (session) { post('date', { date }).then(() => toast('Date changed')).catch(err => toast(err.message)); return; }
               startRef.current = date; setStartDate(date); toast('Date set. It\'s saved with the first set you log.');
             }} />
+          </span>
         </div>
         {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it. To log for them, press "Log for ${view.person.name}" on their block.` : 'This block has finished, so this workout is read-only.'}</p>}
       </div>
@@ -311,7 +336,7 @@ function WorkoutBody({ me }) {
             <p style={{ margin: 0 }}>This removes {parts.length ? parts.join(', ') : 'everything logged here'}, and the tile goes back to not started. Your block stays the same, so you can log this workout again later.</p>
             <div class="row">
               <button class="btn primary" onClick={() => post('clear').then(() => {
-                setDrafts({}); setRemoved({}); setErrors({}); setNotes({}); setOpenNotes({});
+                setDrafts({}); setRemoved({}); setErrors({}); setUps({}); setNotes({}); setOpenNotes({});
                 setSheet(null); toast('Workout cleared');
               }).catch(err => toast(err.message))}>Clear workout</button>
               <button class="btn" onClick={() => setSheet(null)}>Cancel</button>

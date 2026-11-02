@@ -4,7 +4,7 @@ import { currentUser, fail, handle } from '../lib/training/http.js';
 import { loadBlocks, loadExercises, store, today } from '../lib/training/store.js';
 import { TYPE_LABEL } from '../lib/training/exercises.js';
 
-const HEADER = ['Date', 'Person', 'Block', 'Week', 'Workout', 'Exercise', 'Type', 'Set', 'Extra', 'Reps', 'Kg', 'Seconds', 'Band', 'Entered by', 'Note'];
+const HEADER = ['Date', 'Person', 'Block', 'Week', 'Workout', 'Exercise', 'Type', 'Set', 'Extra', 'Reps', 'Kg', 'Seconds', 'Band', 'Increase next time', 'Entered by', 'Note'];
 
 // Quotes where needed, and stops typed text starting with = + - @ being run as a spreadsheet formula.
 const cell = v => {
@@ -33,7 +33,7 @@ async function personRows(personId, people, exercises) {
         rows.push({
           sort: [session.date, num, Number(week)],
           cells: [session.date, people[personId].name, num, Number(week), workout, x?.name || s.ex, TYPE_LABEL[x?.type] || '', s.set + 1, s.extra ? 'Yes' : '',
-            s.reps, s.kg, s.secs, s.band, s.by ? people[s.by]?.name || 'Someone else' : '', session.notes?.[s.extra ? `${s.ex}|x` : s.ex] || ''],
+            s.reps, s.kg, s.secs, s.band, s.up ? 'Yes' : '', s.by ? people[s.by]?.name || 'Someone else' : '', session.notes?.[s.extra ? `${s.ex}|x` : s.ex] || ''],
         });
       }
     }

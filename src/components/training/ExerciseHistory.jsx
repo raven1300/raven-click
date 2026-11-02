@@ -4,7 +4,7 @@ import Shell from './Shell.jsx';
 import { Icon, Picture, TYPE_LABEL, fmtSet, fmtTime, longDate, shortDate } from './ui.jsx';
 
 const COLUMNS = { weight: ['Reps', 'Weight'], body: ['Reps'], timed: ['Time'], band: ['Reps', 'Band'] };
-const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg`] : type === 'timed' ? [fmtTime(s.secs)] : type === 'band' ? [s.reps, s.band] : [s.reps]);
+const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg${s.up ? ' +' : ''}`] : type === 'timed' ? [fmtTime(s.secs)] : type === 'band' ? [s.reps, s.band] : [s.reps]);
 const CHART_LABEL = { weight: 'Heaviest weight (kg)', body: 'Most reps', timed: 'Longest hold (min:sec)', band: 'Most reps' };
 const plotValue = (type, s) => (type === 'weight' ? s.kg : type === 'timed' ? s.secs : s.reps);
 

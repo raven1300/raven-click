@@ -1,7 +1,7 @@
 // Logged training, one record per person per block:
 //   logs/<person>/<block> { sessions: { "<week>/<workoutId>": session } }
 // A session is one trained workout:
-//   { date, plan: [{ ex, sets }], sets: [{ ex, set, extra, reps?, kg?, secs?, band? }],
+//   { date, plan: [{ ex, sets }], sets: [{ ex, set, extra, reps?, kg?, up?, secs?, band? }],
 //     extras: [{ ex, sets }], notes: { "<ex>" or "<ex>|x": text }, finished, autoFinished? }
 // `plan` is a snapshot of the workout's exercises and sets when it was first trained, so editing
 // a running block later never changes how earlier weeks look.
