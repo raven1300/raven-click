@@ -5,14 +5,18 @@ import { Icon, blockHref, longDate, shortDate } from './ui.jsx';
 
 const STATE_LABEL = { none: 'not started', progress: 'in progress', done: 'done', incomplete: 'finished early' };
 
-function Tile({ personId, block, week, workout, summary }) {
+// "Thu 5", the day a not-started workout is on your schedule.
+const plannedDay = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric' }); };
+
+function Tile({ personId, block, week, workout, summary, planned }) {
   const state = summary?.state || 'none';
   const label = state === 'done' ? `✓ ${shortDate(summary.date)}`
     : state === 'incomplete' ? `${summary.logged}/${summary.total} · ${shortDate(summary.date)}`
-    : state === 'progress' ? `${summary.logged}/${summary.total} sets` : '';
+    : state === 'progress' ? `${summary.logged}/${summary.total} sets`
+    : planned ? plannedDay(planned) : '';
   const href = `/training/workout/?${new URLSearchParams({ person: personId, block: block.num, week, workout: workout.id })}`;
   return (
-    <a class={`tile ${state}`} href={href} aria-label={`Week ${week} ${workout.name}: ${STATE_LABEL[state]}`}>
+    <a class={`tile ${state}${planned && state === 'none' ? ' planned' : ''}`} href={href} aria-label={`Week ${week} ${workout.name}: ${STATE_LABEL[state]}`}>
       {state === 'progress' && <span class="fill" style={{ height: `${Math.round((summary.logged / summary.total) * 100)}%` }} />}
       <span class="nm"><Icon name={workout.icon} />{workout.name}</span>
       <span class="st">{label || ' '}</span>
@@ -20,7 +24,7 @@ function Tile({ personId, block, week, workout, summary }) {
   );
 }
 
-function BlockGrid({ personId, block, progress }) {
+function BlockGrid({ personId, block, progress, planned = {} }) {
   const n = block.workouts.length;
   let weekNo = 0;
   return (
@@ -39,7 +43,7 @@ function BlockGrid({ personId, block, progress }) {
               <div class="week" key={week}>
                 <span class="wk">W{week}</span>
                 <div class="tiles" style={{ '--n': n }}>
-                  {block.workouts.map(wo => <Tile key={wo.id} personId={personId} block={block} week={week} workout={wo} summary={progress[`${week}/${wo.id}`]} />)}
+                  {block.workouts.map(wo => <Tile key={wo.id} personId={personId} block={block} week={week} workout={wo} summary={progress[`${week}/${wo.id}`]} planned={planned[`${week}/${wo.id}`]} />)}
                 </div>
               </div>
             ))}
@@ -150,7 +154,10 @@ function Viewing({ me, people, personId }) {
           </select>
         </label>
       ) : <span />}
-      <a class="btn" style={{ textDecoration: 'none' }} href={historyHref}>History</a>
+      <div class="row">
+        {personId === me.id && me.schedule && <a class="btn" style={{ textDecoration: 'none' }} href="/training/schedule/">Schedule</a>}
+        <a class="btn" style={{ textDecoration: 'none' }} href={historyHref}>History</a>
+      </div>
     </div>
   );
 }
@@ -162,10 +169,11 @@ function DashboardBody({ me }) {
   const [people, setPeople] = useState([]);
   const [blocks, setBlocks] = useState(null);
   const [progress, setProgress] = useState({});
+  const [planned, setPlanned] = useState({});
   const [error, setError] = useState('');
   useEffect(() => {
     const query = new URLSearchParams({ person: personId, ...(pastNum ? { block: pastNum } : {}) });
-    api(`blocks?${query}`).then(d => { setBlocks(d.blocks); setProgress(d.progress || {}); }).catch(err => setError(err.message));
+    api(`blocks?${query}`).then(d => { setBlocks(d.blocks); setProgress(d.progress || {}); setPlanned(d.planned || {}); }).catch(err => setError(err.message));
     api('people').then(d => setPeople(d.people)).catch(() => {});
   }, []);
 
@@ -200,7 +208,7 @@ function DashboardBody({ me }) {
             ? <p class="notice small">You're logging for {name}. Tap a workout to log it.</p>
             : <div class="row"><button class="btn primary" onClick={() => { startLogFor({ id: personId, name }); window.location.reload(); }}>Log for {name}</button></div>)}
           <div class="meta">{doneCount} of {shown.workouts.length * weeks} workouts done</div>
-          <BlockGrid personId={personId} block={shown} progress={progress} />
+          <BlockGrid personId={personId} block={shown} progress={progress} planned={planned} />
           <BlockNotes key={shown.num} me={me} people={people} personId={personId} block={shown} />
         </>
       )}

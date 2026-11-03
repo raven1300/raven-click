@@ -157,6 +157,19 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] History's **Results** shows the + beside the kg. The chart and PB are unaffected. The CSV has an **Increase next time** column.
 - [ ] Untick a timed set: its numbers go back into the **min** and **sec** boxes correctly (1 and 45, not 105 sec).
 
+## 6i. Weekly schedule
+
+- [ ] With the schedule off (everyone starts off), a friend's dashboard has no **Schedule** button, and `/training/schedule/` says it isn't switched on.
+- [ ] On **People**, each person has a **Weekly schedule** switch. Turn yours on: your dashboard gets a **Schedule** button next to History.
+- [ ] **Up next** shows one card per workout: the earliest week that isn't done or on the schedule.
+- [ ] On your phone, tap a card, then tap a day. Past days can't be chosen. The card moves to that day and Up next shows the following week of it.
+- [ ] On a computer, drag a card from Up next onto a day, and drag a scheduled card to another day.
+- [ ] Tap a scheduled card: **Open workout**, **Move to another day** and **Take off the schedule** (it goes back to Up next). A trained workout only offers Open, and it sits on the day it was trained.
+- [ ] Log a set in a scheduled workout on a different day: it moves to that day and shows **In progress**. Cards use the block grid's statuses.
+- [ ] A workout planned for a day that's passed, and not started, stays there until you move it.
+- [ ] On your dashboard, a scheduled tile that isn't started shows its day (for example "Thu 5"). Viewing someone else's block shows no days.
+- [ ] Turn your schedule off and on again: what you'd planned is still there.
+
 ## 7. Friend access (stage 1)
 
 - [ ] **Pause** the test person. In their window they see "Your access is paused. Ask Nick."

@@ -167,6 +167,12 @@ function PeopleBody() {
               </div>
             )}
 
+            <div class="split">
+              <span class="small muted">Weekly schedule{person.admin ? '' : ' (they arrange their own week)'}</span>
+              <button type="button" class="switch" role="switch" aria-checked={person.schedule ? 'true' : 'false'} aria-label={`Schedule for ${person.name}`}
+                onClick={() => api('people', { method: 'POST', body: { action: 'schedule', id: person.id, on: !person.schedule } }).then(d => done(d.message)).catch(err => toast(err.message))} />
+            </div>
+
             {person.admin ? (
               <div class="small muted">Your password is set in Netlify, not here.</div>
             ) : (

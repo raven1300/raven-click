@@ -2,6 +2,7 @@ import { adminUser, body, currentUser, fail, handle, json, settings, UserError }
 import { checkPassword, hashPassword, sameSecret } from '../lib/training/passwords.js';
 import { blocksKey, slug, store, update } from '../lib/training/store.js';
 import { countLoggedSets, deleteLogs } from '../lib/training/logs.js';
+import { deletePlan } from '../lib/training/schedule.js';
 
 // Everyone sees names (for browsing each other's history). Only the admin sees who's paused
 // and who has history, which decides whether they can be removed.
@@ -9,7 +10,7 @@ const listFor = (people, isAdmin) => Promise.all(Object.entries(people).map(asyn
   id,
   name: p.name,
   admin: !!p.admin,
-  ...(isAdmin ? { paused: !!p.paused, hasHistory: !!await countLoggedSets(id) } : {}),
+  ...(isAdmin ? { paused: !!p.paused, schedule: !!p.schedule, hasHistory: !!await countLoggedSets(id) } : {}),
 })));
 
 async function checkPasswordFree(people, password, exceptId) {
@@ -69,6 +70,10 @@ export default async (req, context) => handle(async () => {
       if (target.admin) throw new UserError(400, 'You can\'t pause yourself.');
       target.paused = !!input.paused;
       message = `${target.name} is ${target.paused ? 'paused' : 'back on'}.`;
+    } else if (input.action === 'schedule') {
+      // Off by default. Switching it off only hides it; what they'd planned is kept.
+      if (input.on) target.schedule = true; else delete target.schedule;
+      message = `Schedule ${input.on ? 'on' : 'off'} for ${target.name}.`;
     } else if (input.action === 'remove') {
       if (target.admin) throw new UserError(400, 'You can\'t remove yourself.');
       message = `${target.name} removed.`;
@@ -78,7 +83,7 @@ export default async (req, context) => handle(async () => {
     }
     return current;
   });
-  if (input.action === 'remove') await Promise.all([store().delete(blocksKey(input.id)), deleteLogs(input.id)]);
+  if (input.action === 'remove') await Promise.all([store().delete(blocksKey(input.id)), deleteLogs(input.id), deletePlan(input.id)]);
 
   return json({ people: await listFor(data.people, true), message });
 }, context);

@@ -1,0 +1,7 @@
+---
+import TrainingLayout from '../../layouts/training/TrainingLayout.astro';
+import Schedule from '../../components/training/Schedule.jsx';
+---
+<TrainingLayout pageTitle="Schedule">
+  <Schedule client:only="preact" />
+</TrainingLayout>
