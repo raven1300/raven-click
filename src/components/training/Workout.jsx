@@ -77,6 +77,9 @@ function WorkoutBody({ me }) {
   const [sheet, setSheet] = useState(null);
   const [toast, toastView] = useToast();
   const focused = useRef(null);
+  // Sets the person moved away from with typed numbers that nothing is saving: only these show "Not saved".
+  const [left, setLeft] = useState({});
+  const saving = useRef(new Set());
   const latest = useRef({});
   latest.current = { view, drafts, removed, ups };
 
@@ -103,11 +106,14 @@ function WorkoutBody({ me }) {
     setErrors(e => { const next = { ...e }; keys.forEach(k => delete next[k]); return next; });
     setRemoved(r => { const next = { ...r }; keys.forEach(k => delete next[k]); return next; });
     setUps(u => { const next = { ...u }; keys.forEach(k => delete next[k]); return next; });
+    setLeft(l => { const next = { ...l }; keys.forEach(k => delete next[k]); return next; });
   };
 
   // Saves several rows in one request. Rows must already be complete.
   const saveRows = async rows => {
     const keys = rows.map(r => rowKey(r.ex, r.set, r.extra));
+    keys.forEach(k => saving.current.add(k));
+    setLeft(l => { const next = { ...l }; keys.forEach(k => delete next[k]); return next; });
     try {
       await post('save-sets', { sets: rows.map(r => ({ ex: r.ex, set: r.set, extra: r.extra, values: toValues(typeOf(r.ex), latest.current.drafts[rowKey(r.ex, r.set, r.extra)]), up: !!latest.current.ups[rowKey(r.ex, r.set, r.extra)] })) });
       clearRows(keys);
@@ -115,6 +121,8 @@ function WorkoutBody({ me }) {
     } catch (err) {
       setRowError(keys, err.status === 0 ? 'Not saved. Check your connection and tap ✓ again.' : err.message);
       return false;
+    } finally {
+      keys.forEach(k => saving.current.delete(k));
     }
   };
 
@@ -173,6 +181,18 @@ function WorkoutBody({ me }) {
     if (await saveRows([prevRow])) toast(`Saved ${nameOf(ex)} set ${prevRow.set + 1}`);
   };
 
+  // Focus leaving a set altogether. The short wait lets a tap on ✓ or the auto-save start first; a save
+  // in progress keeps the hint hidden however slow the connection is.
+  const onLeaveRow = (e, row) => {
+    const key = rowKey(row.ex, row.set, row.extra);
+    if (e.currentTarget.closest('.set')?.contains(e.relatedTarget)) return;
+    setTimeout(() => {
+      const { view: v, drafts: d, removed: gone } = latest.current;
+      if (saving.current.has(key) || findLogged(v, row) || gone[key] || !hasTyped(d[key])) return;
+      setLeft(l => ({ ...l, [key]: true }));
+    }, 400);
+  };
+
   const unsavedRows = () => rowsInOrder(view).filter(r => { const k = rowKey(r.ex, r.set, r.extra); return !findLogged(view, r) && !removed[k] && hasTyped(drafts[k]); });
 
   // Leaving for the block or an exercise's history asks first if there are unsaved numbers.
@@ -209,7 +229,8 @@ function WorkoutBody({ me }) {
                 disabled={!!logged || !canEdit}
                 aria-label={`Set ${row.set + 1} ${f === 'secs' ? 'seconds' : f === 'mins' ? 'minutes' : f}`}
                 onFocus={() => onFocusRow(row)}
-                onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setRemoved(r => { const n = { ...r }; delete n[key]; return n; }); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); }}
+                onBlur={e => onLeaveRow(e, row)}
+                onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setRemoved(r => { const n = { ...r }; delete n[key]; return n; }); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); setLeft(l => { const n = { ...l }; delete n[key]; return n; }); }}
               />
               {UNITS[f] && <span>{UNITS[f]}</span>}
             </label>
@@ -223,7 +244,7 @@ function WorkoutBody({ me }) {
         <button class="tick" aria-pressed={logged ? 'true' : 'false'} aria-label={`${logged ? 'Untick' : 'Save'} set ${row.set + 1}`} disabled={!canEdit || busy || (logged && !canChange(logged))} onClick={() => tick(row)}>✓</button>
         {errors[key] ? <span class="set-msg err">{errors[key]}</span>
           : !logged && canEdit && removed[key] ? <span class="set-msg removed">Removed. Tap ✓ to save it again.</span>
-          : !logged && canEdit && hasTyped(draft) ? <span class="set-msg hint">Not saved. Tap ✓</span> : null}
+          : !logged && canEdit && left[key] && hasTyped(draft) ? <span class="set-msg hint">Not saved</span> : null}
         {logged?.by && <span class="entered-by">Entered by {view.names[logged.by] || 'someone else'}</span>}
       </div>
     );

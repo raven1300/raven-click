@@ -156,6 +156,7 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] Next time, the **Last** line ends with **+**. This also shows if only an earlier set was marked.
 - [ ] History's **Results** shows the + beside the kg. The chart and PB are unaffected. The CSV has an **Increase next time** column.
 - [ ] Untick a timed set: its numbers go back into the **min** and **sec** boxes correctly (1 and 45, not 105 sec).
+- [ ] Typing into a set shows no **Not saved** message. Fill a set and move straight into the next set's boxes: it saves with no message, even on a slow connection. Leave a set half-filled, or fill the last set and tap away without ✓: **Not saved** appears beside it.
 
 ## 6i. Weekly schedule
 
