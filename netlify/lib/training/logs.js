@@ -2,7 +2,9 @@
 //   logs/<person>/<block> { sessions: { "<week>/<workoutId>": session } }
 // A session is one trained workout:
 //   { date, plan: [{ ex, sets }], sets: [{ ex, set, extra, reps?, kg?, up?, secs?, band? }],
-//     extras: [{ ex, sets }], notes: { "<ex>" or "<ex>|x": text }, finished, autoFinished? }
+//     extras: [{ ex, sets }], notes: { "<ex>" or "<ex>|x": text }, ups?: { "<ex>" or "<ex>|x": true },
+//     finished, autoFinished? }
+// `ups` marks a weight exercise "go up next time". Older sessions marked single sets with `up` instead.
 // `plan` is a snapshot of the workout's exercises and sets when it was first trained, so editing
 // a running block later never changes how earlier weeks look.
 import { read, store, today, update } from './store.js';
@@ -30,6 +32,10 @@ export const newSession = workout => ({
   notes: {},
   finished: false,
 });
+
+// Whether an exercise was marked "go up next time" in a session, either way it was stored.
+export const markedUp = (session, ex, extra) =>
+  !!session.ups?.[extra ? `${ex}|x` : ex] || session.sets.some(s => s.ex === ex && !!s.extra === !!extra && s.up);
 
 const plannedTotal = session => session.plan.reduce((sum, it) => sum + it.sets, 0);
 const plannedLogged = session => session.sets.filter(s => !s.extra).length;

@@ -1,7 +1,7 @@
 // One workout in a block: load it (GET) and log sets, notes and extras (POST).
 import { body, currentUser, fail, handle, json, UserError } from '../lib/training/http.js';
 import { loadBlocks, loadExercises } from '../lib/training/store.js';
-import { changeSessions, cleanValues, loadSessions, newSession, sessionKey, sessionState } from '../lib/training/logs.js';
+import { changeSessions, cleanValues, loadSessions, markedUp, newSession, sessionKey, sessionState } from '../lib/training/logs.js';
 
 const totalWeeks = plan => plan.reduce((sum, ph) => sum + ph.weeks, 0);
 function phaseAt(plan, week) {
@@ -48,7 +48,7 @@ async function lastTimes(personId, blocks, block, key, currentSessions, exIds, b
     for (const ex of [...remaining]) {
       const found = entries.find(([, s]) => s.sets.some(st => st.ex === ex));
       if (found) {
-        result[ex] = { date: found[1].date, sets: found[1].sets.filter(st => st.ex === ex).sort(setOrder) };
+        result[ex] = { date: found[1].date, sets: found[1].sets.filter(st => st.ex === ex).sort(setOrder), up: markedUp(found[1], ex, false) || markedUp(found[1], ex, true) };
         remaining.delete(ex);
       }
     }
@@ -134,19 +134,27 @@ export default async (req, context) => handle(async () => {
         const at = findSet(session, s.ex, s.set, extra);
         if (at >= 0) checkCanChange(user, located.personId, session.sets[at]);
         // Whoever saves a set last owns it; `by` is only stored when that isn't the person themselves.
-        const entry = { ex: s.ex, set: s.set, extra, ...cleanValues(exercises[s.ex].type, s.values), ...(s.up && exercises[s.ex].type === 'weight' ? { up: true } : {}), ...(user.id !== located.personId ? { by: user.id } : {}) };
+        const entry = { ex: s.ex, set: s.set, extra, ...cleanValues(exercises[s.ex].type, s.values), ...(user.id !== located.personId ? { by: user.id } : {}) };
         if (at >= 0) session.sets[at] = entry; else session.sets.push(entry);
       }
     } else if (input.action === 'unsave-set') {
       const at = findSet(session, input.ex, input.set, input.extra);
       if (at >= 0) checkCanChange(user, located.personId, session.sets[at]);
       if (at >= 0) session.sets.splice(at, 1);
-    } else if (input.action === 'mark-up') {
-      // "Increase next time" on a saved weight set. Separate from the numbers, so charts and PBs ignore it.
-      const at = findSet(session, input.ex, input.set, input.extra);
-      if (at < 0 || exercises[input.ex]?.type !== 'weight') throw new UserError(400, 'That set isn\'t saved.');
-      checkCanChange(user, located.personId, session.sets[at]);
-      if (input.up) session.sets[at].up = true; else delete session.sets[at].up;
+    } else if (input.action === 'go-up') {
+      // "Go up next time" for a weight exercise in this workout. Separate from the numbers, so charts and PBs ignore it.
+      const extra = !!input.extra;
+      const inWorkout = extra ? session.extras.some(e => e.ex === input.ex) : session.plan.some(it => it.ex === input.ex);
+      if (!inWorkout || exercises[input.ex]?.type !== 'weight') throw new UserError(400, 'Go up is only for weight exercises in this workout.');
+      const upKey = extra ? `${input.ex}|x` : input.ex;
+      session.ups ||= {};
+      if (input.up) session.ups[upKey] = true;
+      else {
+        delete session.ups[upKey];
+        // Older marks sat on single sets.
+        for (const s of session.sets) if (s.ex === input.ex && !!s.extra === extra) delete s.up;
+      }
+      if (!Object.keys(session.ups).length) delete session.ups;
     } else if (input.action === 'note') {
       const noteKey = input.extra ? `${input.ex}|x` : input.ex;
       const text = String(input.text || '').trim().slice(0, 500);
@@ -159,6 +167,7 @@ export default async (req, context) => handle(async () => {
       // Empties the workout; the check below then removes it, so the tile goes back to "not started".
       Object.assign(session, { sets: [], extras: [], notes: {}, finished: false });
       delete session.autoFinished;
+      delete session.ups;
     } else if (input.action === 'finish') {
       session.finished = true;
       delete session.autoFinished;
@@ -179,6 +188,7 @@ export default async (req, context) => handle(async () => {
         if (extra.sets <= 0) {
           session.extras = session.extras.filter(e => e !== extra);
           delete session.notes[`${input.ex}|x`];
+          if (session.ups) delete session.ups[`${input.ex}|x`];
         }
       }
     } else {
@@ -186,7 +196,7 @@ export default async (req, context) => handle(async () => {
     }
 
     // A workout with nothing in it goes back to "not started".
-    if (!session.sets.length && !session.extras.length && !Object.keys(session.notes).length && !session.finished) delete sessions[key];
+    if (!session.sets.length && !session.extras.length && !Object.keys(session.notes).length && !Object.keys(session.ups || {}).length && !session.finished) delete sessions[key];
   })).sessions;
 
   return json(await workoutView(user, located, sessions));

@@ -1,10 +1,11 @@
+import { ArrowUp } from 'lucide-preact';
 import { useEffect, useState } from 'preact/hooks';
 import { api } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, Picture, TYPE_LABEL, fmtSet, fmtTime, longDate, shortDate } from './ui.jsx';
 
 const COLUMNS = { weight: ['Reps', 'Weight'], body: ['Reps'], timed: ['Time'], band: ['Reps', 'Band'] };
-const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg${s.up ? ' +' : ''}`] : type === 'timed' ? [fmtTime(s.secs)] : type === 'band' ? [s.reps, s.band] : [s.reps]);
+const cells = (type, s) => (type === 'weight' ? [s.reps, `${s.kg} kg`] : type === 'timed' ? [fmtTime(s.secs)] : type === 'band' ? [s.reps, s.band] : [s.reps]);
 const CHART_LABEL = { weight: 'Heaviest weight (kg)', body: 'Most reps', timed: 'Longest hold (min:sec)', band: 'Most reps' };
 const plotValue = (type, s) => (type === 'weight' ? s.kg : type === 'timed' ? s.secs : s.reps);
 
@@ -51,6 +52,7 @@ function Results({ data }) {
           </tbody>
         </table>
       </div>
+      {s.up && <div class="note-line goup-line"><ArrowUp aria-hidden="true" />Go up next time</div>}
       {s.note && <div class="note-line">{s.note}</div>}
       {enteredBy(s.sets, names) && <div class="note-line"><span class="by-mark">•</span> {enteredBy(s.sets, names)}</div>}
     </section>

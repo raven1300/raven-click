@@ -39,7 +39,7 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 
 **Look: Neon** (chosen 2026-10-26 over Silver & Red and the original blue): always dark, a deep night-purple background with a faint pink and cyan grid. **Acid green** means in progress, **hot pink with a glow** means done, and **cyan** means finished early. Cyan is also used for buttons and other active controls. Fonts are **Orbitron** for headings and **Exo 2** for text and numbers. The shared raven.click header stays charcoal. Icons come from the Lucide line-icon set.
 
-**Dropped:** the weekly drag-and-drop schedule (people arrange days outside the app), the stopwatch, and tempo and intensity.
+**Dropped:** the stopwatch, and tempo and intensity. The weekly drag-and-drop schedule was dropped at first, then built on 2026-11-03 as an optional feature that the admin switches on per person.
 
 **Exercise list (shared catalogue, managed by Nick)**
 - Each exercise has a hidden ID, a name and a type. **History attaches to the exercise ID**, not to blocks or wording.
@@ -124,11 +124,12 @@ Reference screenshots of the app Nick uses now, plus Gemini dashboard ideas, are
 - **Finish workout** sits at the bottom and is only needed when stopping with sets still empty. It asks "6 of 10 sets logged. Finish anyway?", and a yes marks the workout **finished early**. The empty sets can still be filled in later, and "Undo finish" reverses it. When every set is logged, the bottom bar shows "All sets logged" instead.
 - **+ Add exercise** (anyone): pick an extra exercise from the list for **that day only**, marked as an extra. It starts with **1 set**. "+ Set" adds one, and "− Set" removes the last unticked set (or removes the exercise when only one empty set is left). It doesn't change the block and doesn't count towards the tile's state. History is kept, so re-adding it next week shows last time's numbers straight away.
 - One note per exercise, hidden behind "+ note", and a "History" link per exercise.
+- **Go up next time** (changed 2026-11-06): a toggle in a weight exercise's footer, beside + Note, saved straight away like a note. It marks the whole exercise rather than one set, because only the last set matters for next time. Next time, the Last line turns cyan and ends with a "↑ Go up" tag. It started on 2026-11-03 as a + button on each set; sets marked that way still count.
 
 **History (per exercise)**
 - A Results tab (by date, then sets, reps and weight) and a Chart tab, with personal bests marked, like the current app. It spans all blocks.
 - **Personal bests (decided 2026-10-27):** weight exercises: the heaviest weight, with more reps breaking a tie (not an estimated one-rep max). Bodyweight: most reps. Timed: longest hold. Band: most reps, with "No band" beating any band.
-- **Export to CSV** as a backup that opens in Google Sheets or Excel. Each person can export their own data, and Nick can export everyone's. Built in stage 5: buttons on the History page, one row per set with date, person, block, week, workout, exercise, type, set, extra, reps, kg, seconds, band, entered by and note.
+- **Export to CSV** as a backup that opens in Google Sheets or Excel. Each person can export their own data, and Nick can export everyone's. Built in stage 5: buttons on the History page, one row per set with date, person, block, week, workout, exercise, type, set, extra, reps, kg, seconds, band, increase next time, entered by and note.
 
 **Access (decided 2026-10-25, passwords 2026-10-26)**
 - The whole of `/training` is behind a login. A Netlify Edge Function checks for a valid login before any training page loads. Recipes and the landing page stay public.

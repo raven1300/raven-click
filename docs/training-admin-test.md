@@ -148,13 +148,14 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] The CSV export still has a plain **Seconds** column (105 for 1:45).
 - [ ] Open a workout you haven't started and change **Trained on** to a past date before logging anything. It says the date is saved with the first set. Log a set and reload: the date is kept, and the tile shows that date.
 
-## 6h. Friends' feedback: date, last set, and the + reminder
+## 6h. Friends' feedback: date, last set, and Go up
 
 - [ ] **Trained on** shows as dd/mm/yyyy (for example 02/11/2026). Tapping it opens the date picker, on your phone and on desktop. Someone else's workout shows the date but can't change it.
 - [ ] The **Last** line under an exercise shows only the final set from the most recent workout.
-- [ ] A weight set has a **+** button beside the kg box; other types don't. Tap it before ticking: it lights up and stays lit after ticking. Tap it on a saved set: it changes straight away, with no need to untick. Reload: it's kept.
-- [ ] Next time, the **Last** line ends with **+**. This also shows if only an earlier set was marked.
-- [ ] History's **Results** shows the + beside the kg. The chart and PB are unaffected. The CSV has an **Increase next time** column.
+- [ ] A weight exercise has a **Go up next time** toggle in its footer, beside + Note; other types don't, and the set rows have no + button. Tap it, even before saving a set: it lights up. Reload: it's kept. Untick a set: it stays on.
+- [ ] Next time, the **Last** line turns cyan and ends with a **↑ Go up** tag. An unmarked exercise looks as before. A set marked with the old + button still shows Go up.
+- [ ] History's **Results** shows a **Go up next time** line under that session. The chart and PB are unaffected. The CSV's **Increase next time** column says Yes for that exercise's sets.
+- [ ] Viewing someone else's workout without logging for them, the toggle shows whether they marked it but can't be changed.
 - [ ] Untick a timed set: its numbers go back into the **min** and **sec** boxes correctly (1 and 45, not 105 sec).
 - [ ] Typing into a set shows no **Not saved** message. Fill a set and move straight into the next set's boxes: it saves with no message, even on a slow connection. Leave a set half-filled, or fill the last set and tap away without ✓: **Not saved** appears beside it.
 

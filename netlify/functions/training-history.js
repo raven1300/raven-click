@@ -2,6 +2,7 @@
 // across all their blocks with its personal best (GET ?person&ex).
 import { currentUser, fail, handle, json } from '../lib/training/http.js';
 import { loadBlocks, loadExercises, store } from '../lib/training/store.js';
+import { markedUp } from '../lib/training/logs.js';
 
 // Which set is better, by exercise type. Weight: heavier, then more reps. Band: "No band" beats any band.
 const score = (type, s) => {
@@ -42,7 +43,8 @@ async function loadEntries(personId) {
           workout: { id: workoutId, name: workout?.name || workoutId, icon: workout?.icon },
           extra,
           note: session.notes?.[extra ? `${ex}|x` : ex] || '',
-          sets: sets.sort((a, b) => a.set - b.set).map(({ ex: _ex, extra: _x, ...rest }) => rest),
+          up: markedUp(session, ex, extra),
+          sets: sets.sort((a, b) => a.set - b.set).map(({ ex: _ex, extra: _x, up: _up, ...rest }) => rest),
         });
       }
     }
