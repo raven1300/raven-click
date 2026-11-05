@@ -148,6 +148,29 @@ You need two test people (say Sam and Jess) with running blocks.
 - [ ] The CSV export still has a plain **Seconds** column (105 for 1:45).
 - [ ] Open a workout you haven't started and change **Trained on** to a past date before logging anything. It says the date is saved with the first set. Log a set and reload: the date is kept, and the tile shows that date.
 
+## 6h. Friends' feedback: date, last set, and the + reminder
+
+- [ ] **Trained on** shows as dd/mm/yyyy (for example 02/11/2026). Tapping it opens the date picker, on your phone and on desktop. Someone else's workout shows the date but can't change it.
+- [ ] The **Last** line under an exercise shows only the final set from the most recent workout.
+- [ ] A weight set has a **+** button beside the kg box; other types don't. Tap it before ticking: it lights up and stays lit after ticking. Tap it on a saved set: it changes straight away, with no need to untick. Reload: it's kept.
+- [ ] Next time, the **Last** line ends with **+**. This also shows if only an earlier set was marked.
+- [ ] History's **Results** shows the + beside the kg. The chart and PB are unaffected. The CSV has an **Increase next time** column.
+- [ ] Untick a timed set: its numbers go back into the **min** and **sec** boxes correctly (1 and 45, not 105 sec).
+- [ ] Typing into a set shows no **Not saved** message. Fill a set and move straight into the next set's boxes: it saves with no message, even on a slow connection. Leave a set half-filled, or fill the last set and tap away without ✓: **Not saved** appears beside it.
+
+## 6i. Weekly schedule
+
+- [ ] With the schedule off (everyone starts off), a friend's dashboard has no **Schedule** button, and `/training/schedule/` says it isn't switched on.
+- [ ] On **People**, each person has a **Weekly schedule** switch. Turn yours on: your dashboard gets a **Schedule** button next to History.
+- [ ] **Up next** shows one card per workout: the earliest week that isn't done or on the schedule.
+- [ ] On your phone, tap a card, then tap a day. Past days can't be chosen. The card moves to that day and Up next shows the following week of it.
+- [ ] On a computer, drag a card from Up next onto a day, and drag a scheduled card to another day.
+- [ ] Tap a scheduled card: **Open workout**, **Move to another day** and **Take off the schedule** (it goes back to Up next). A trained workout only offers Open, and it sits on the day it was trained.
+- [ ] Log a set in a scheduled workout on a different day: it moves to that day and shows **In progress**. Cards use the block grid's statuses.
+- [ ] A workout planned for a day that's passed, and not started, stays there until you move it.
+- [ ] On your dashboard, a scheduled tile that isn't started shows its day (for example "Thu 5"). Viewing someone else's block shows no days.
+- [ ] Turn your schedule off and on again: what you'd planned is still there.
+
 ## 7. Friend access (stage 1)
 
 - [ ] **Pause** the test person. In their window they see "Your access is paused. Ask Nick."

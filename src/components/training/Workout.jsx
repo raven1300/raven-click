@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { Calendar } from 'lucide-preact';
 import { api, logFor } from './api.js';
 import Shell from './Shell.jsx';
 import { Icon, Picture, Sheet, TYPE_LABEL, blockHref, fmtSet, useToast } from './ui.jsx';
@@ -19,6 +20,7 @@ const missing = (type, d) => (type === 'timed'
 const toValues = (type, d) => (type === 'timed' ? { secs: totalSecs(d) }
   : Object.fromEntries(FIELDS[type].map(f => [f, f === 'band' ? (d[f] || '') : Number(d[f])])));
 const loggedValue = (s, f) => String(f === 'mins' ? Math.floor(s.secs / 60) : f === 'secs' && s.secs != null ? s.secs % 60 : s[f] ?? '');
+const ddmmyyyy = iso => iso.split('-').reverse().join('/');
 const dayLabel = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Melbourne' }).format(new Date());
 
@@ -63,14 +65,23 @@ function WorkoutBody({ me }) {
   // Rows the person unticked: their numbers stay visible, but nothing saves them again unless the person edits or re-ticks.
   const [removed, setRemoved] = useState({});
   const [errors, setErrors] = useState({});
+  // "Increase next time" marks on sets that aren't saved yet. Saved sets carry their own `up`.
+  const [ups, setUps] = useState({});
+  // The workout isn't stored until something is logged, so a date picked before then waits here
+  // and goes with the first save.
+  const [startDate, setStartDate] = useState('');
+  const startRef = useRef('');
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState({});
   const [openNotes, setOpenNotes] = useState({});
   const [sheet, setSheet] = useState(null);
   const [toast, toastView] = useToast();
   const focused = useRef(null);
+  // Sets the person moved away from with typed numbers that nothing is saving: only these show "Not saved".
+  const [left, setLeft] = useState({});
+  const saving = useRef(new Set());
   const latest = useRef({});
-  latest.current = { view, drafts, removed };
+  latest.current = { view, drafts, removed, ups };
 
   useEffect(() => {
     api(`session?${new URLSearchParams(query)}`).then(setView).catch(err => setLoadError(err.message));
@@ -83,10 +94,6 @@ function WorkoutBody({ me }) {
   const typeOf = ex => exercises[ex]?.type || 'weight';
   const nameOf = ex => exercises[ex]?.name || 'Removed exercise';
 
-  // The workout isn't stored until something is logged, so a date picked before then waits here
-  // and goes with the first save.
-  const [startDate, setStartDate] = useState('');
-  const startRef = useRef('');
   const post = async (action, payload = {}) => {
     const pending = !latest.current.view.session && startRef.current ? { startDate: startRef.current } : {};
     const data = await api('session', { method: 'POST', body: { ...query, action, ...pending, ...payload } });
@@ -98,18 +105,24 @@ function WorkoutBody({ me }) {
     setDrafts(d => { const next = { ...d }; keys.forEach(k => delete next[k]); return next; });
     setErrors(e => { const next = { ...e }; keys.forEach(k => delete next[k]); return next; });
     setRemoved(r => { const next = { ...r }; keys.forEach(k => delete next[k]); return next; });
+    setUps(u => { const next = { ...u }; keys.forEach(k => delete next[k]); return next; });
+    setLeft(l => { const next = { ...l }; keys.forEach(k => delete next[k]); return next; });
   };
 
   // Saves several rows in one request. Rows must already be complete.
   const saveRows = async rows => {
     const keys = rows.map(r => rowKey(r.ex, r.set, r.extra));
+    keys.forEach(k => saving.current.add(k));
+    setLeft(l => { const next = { ...l }; keys.forEach(k => delete next[k]); return next; });
     try {
-      await post('save-sets', { sets: rows.map(r => ({ ex: r.ex, set: r.set, extra: r.extra, values: toValues(typeOf(r.ex), latest.current.drafts[rowKey(r.ex, r.set, r.extra)]) })) });
+      await post('save-sets', { sets: rows.map(r => ({ ex: r.ex, set: r.set, extra: r.extra, values: toValues(typeOf(r.ex), latest.current.drafts[rowKey(r.ex, r.set, r.extra)]), up: !!latest.current.ups[rowKey(r.ex, r.set, r.extra)] })) });
       clearRows(keys);
       return true;
     } catch (err) {
       setRowError(keys, err.status === 0 ? 'Not saved. Check your connection and tap ✓ again.' : err.message);
       return false;
+    } finally {
+      keys.forEach(k => saving.current.delete(k));
     }
   };
 
@@ -131,8 +144,9 @@ function WorkoutBody({ me }) {
     if (logged) {
       try {
         await post('unsave-set', row);
-        setDrafts(d => ({ ...d, [key]: Object.fromEntries(FIELDS[typeOf(row.ex)].map(f => [f, String(logged[f] ?? '')])) }));
+        setDrafts(d => ({ ...d, [key]: Object.fromEntries(FIELDS[typeOf(row.ex)].map(f => [f, loggedValue(logged, f)])) }));
         setRemoved(r => ({ ...r, [key]: true }));
+        setUps(u => ({ ...u, [key]: !!logged.up }));
       } catch (err) { setRowError([key], err.message); }
       setBusy(false);
       return;
@@ -141,6 +155,16 @@ function WorkoutBody({ me }) {
     if (gaps.length) { setRowError([key], `Enter ${gaps.map(g => MISSING_WORD[g]).join(' and ')} first.`); setBusy(false); return; }
     const earlier = readyBefore(row);
     if (await saveRows([...earlier, row]) && earlier.length) toast(`Also saved: ${earlier.map(r => `${nameOf(r.ex)} set ${r.set + 1}`).join(', ')}`);
+    setBusy(false);
+  };
+
+  // Marks a set "increase next time". A saved set changes straight away; otherwise it goes with the save.
+  const toggleUp = async row => {
+    const key = rowKey(row.ex, row.set, row.extra);
+    const logged = findLogged(view, row);
+    if (!logged) { setUps(u => ({ ...u, [key]: !u[key] })); return; }
+    setBusy(true);
+    try { await post('mark-up', { ...row, up: !logged.up }); } catch (err) { setRowError([key], err.message); }
     setBusy(false);
   };
 
@@ -155,6 +179,18 @@ function WorkoutBody({ me }) {
     const { view: v, drafts: d, removed: gone } = latest.current;
     if (!v.canEdit || gone[prev] || findLogged(v, prevRow) || !hasTyped(d[prev]) || missing(typeOf(ex), d[prev]).length) return;
     if (await saveRows([prevRow])) toast(`Saved ${nameOf(ex)} set ${prevRow.set + 1}`);
+  };
+
+  // Focus leaving a set altogether. The short wait lets a tap on ✓ or the auto-save start first; a save
+  // in progress keeps the hint hidden however slow the connection is.
+  const onLeaveRow = (e, row) => {
+    const key = rowKey(row.ex, row.set, row.extra);
+    if (e.currentTarget.closest('.set')?.contains(e.relatedTarget)) return;
+    setTimeout(() => {
+      const { view: v, drafts: d, removed: gone } = latest.current;
+      if (saving.current.has(key) || findLogged(v, row) || gone[key] || !hasTyped(d[key])) return;
+      setLeft(l => ({ ...l, [key]: true }));
+    }, 400);
   };
 
   const unsavedRows = () => rowsInOrder(view).filter(r => { const k = rowKey(r.ex, r.set, r.extra); return !findLogged(view, r) && !removed[k] && hasTyped(drafts[k]); });
@@ -193,17 +229,22 @@ function WorkoutBody({ me }) {
                 disabled={!!logged || !canEdit}
                 aria-label={`Set ${row.set + 1} ${f === 'secs' ? 'seconds' : f === 'mins' ? 'minutes' : f}`}
                 onFocus={() => onFocusRow(row)}
-                onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setRemoved(r => { const n = { ...r }; delete n[key]; return n; }); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); }}
+                onBlur={e => onLeaveRow(e, row)}
+                onInput={e => { const value = e.currentTarget.value; setDrafts(d => ({ ...d, [key]: { ...d[key], [f]: value } })); setRemoved(r => { const n = { ...r }; delete n[key]; return n; }); setErrors(er => { const n = { ...er }; delete n[key]; return n; }); setLeft(l => { const n = { ...l }; delete n[key]; return n; }); }}
               />
               {UNITS[f] && <span>{UNITS[f]}</span>}
             </label>
           ))}
+          {type === 'weight' && (() => {
+            const marked = logged ? !!logged.up : !!ups[key];
+            return <button type="button" class="up-btn" aria-pressed={marked ? 'true' : 'false'} aria-label={`Increase set ${row.set + 1} next time`} title="Increase next time" disabled={!canEdit || busy || (logged && !canChange(logged))} onClick={() => toggleUp(row)}>+</button>;
+          })()}
           {bands.length > 0 && <datalist id={`bands-${row.ex}`}>{bands.map(b => <option key={b} value={b} />)}</datalist>}
         </div>
         <button class="tick" aria-pressed={logged ? 'true' : 'false'} aria-label={`${logged ? 'Untick' : 'Save'} set ${row.set + 1}`} disabled={!canEdit || busy || (logged && !canChange(logged))} onClick={() => tick(row)}>✓</button>
         {errors[key] ? <span class="set-msg err">{errors[key]}</span>
           : !logged && canEdit && removed[key] ? <span class="set-msg removed">Removed. Tap ✓ to save it again.</span>
-          : !logged && canEdit && hasTyped(draft) ? <span class="set-msg hint">Not saved. Tap ✓</span> : null}
+          : !logged && canEdit && left[key] && hasTyped(draft) ? <span class="set-msg hint">Not saved</span> : null}
         {logged?.by && <span class="entered-by">Entered by {view.names[logged.by] || 'someone else'}</span>}
       </div>
     );
@@ -231,7 +272,7 @@ function WorkoutBody({ me }) {
         </div>
         <div class="last">
           {earlierToday.length ? `Earlier in this workout · ${earlierToday.map(s => fmtSet(type, s)).join(', ')}`
-            : last ? `Last: ${dayLabel(last.date)} · ${last.sets.map(s => fmtSet(type, s)).join(', ')}`
+            : last ? `Last: ${dayLabel(last.date)} · ${fmtSet(type, last.sets[last.sets.length - 1])}${type === 'weight' && last.sets.some(s => s.up) ? ' +' : ''}`
             : 'First time doing this one. No history yet.'}
         </div>
         <div class="sets">{Array.from({ length: sets }, (_, set) => setRow({ ex, set, extra }))}</div>
@@ -274,13 +315,18 @@ function WorkoutBody({ me }) {
         <div class="row">
           <span class={`chip ${chipClass}`}>{chipText}</span>
           <label class="meta" for="trained-on">Trained on</label>
-          <input id="trained-on" class="date-in" type="date" value={session?.date || startDate || todayIso()} disabled={!canEdit}
+          {/* Date boxes follow each phone's region, so the box is invisible over our own dd/mm/yyyy text. */}
+          <span class="date-in">
+            <Calendar aria-hidden="true" />{ddmmyyyy(session?.date || startDate || todayIso())}
+            <input id="trained-on" type="date" value={session?.date || startDate || todayIso()} disabled={!canEdit}
+            onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* The browser opens its own picker. */ } }}
             onChange={e => {
               const date = e.currentTarget.value;
               if (!date) return;
               if (session) { post('date', { date }).then(() => toast('Date changed')).catch(err => toast(err.message)); return; }
               startRef.current = date; setStartDate(date); toast('Date set. It\'s saved with the first set you log.');
             }} />
+          </span>
         </div>
         {!canEdit && <p class="notice small" style={{ marginTop: '0.6rem' }}>{view.block.status === 'running' ? `This is ${view.person.name}'s workout. You can view it but not change it. To log for them, press "Log for ${view.person.name}" on their block.` : 'This block has finished, so this workout is read-only.'}</p>}
       </div>
@@ -311,7 +357,7 @@ function WorkoutBody({ me }) {
             <p style={{ margin: 0 }}>This removes {parts.length ? parts.join(', ') : 'everything logged here'}, and the tile goes back to not started. Your block stays the same, so you can log this workout again later.</p>
             <div class="row">
               <button class="btn primary" onClick={() => post('clear').then(() => {
-                setDrafts({}); setRemoved({}); setErrors({}); setNotes({}); setOpenNotes({});
+                setDrafts({}); setRemoved({}); setErrors({}); setUps({}); setNotes({}); setOpenNotes({});
                 setSheet(null); toast('Workout cleared');
               }).catch(err => toast(err.message))}>Clear workout</button>
               <button class="btn" onClick={() => setSheet(null)}>Cancel</button>

@@ -2,6 +2,7 @@ import { adminUser, body, currentUser, fail, handle, json, UserError } from '../
 import { blocksKey, loadBlocks, loadExercises, loadPeople, today, update } from '../lib/training/store.js';
 import { cleanBlock, nextNumber, queuedBlock, reopenableBlock, runningBlock } from '../lib/training/blocks.js';
 import { finishInProgress, hasTraining, loadSessions, sessionSummary, undoAutoFinish } from '../lib/training/logs.js';
+import { forgetBlock, loadPlan, planFor } from '../lib/training/schedule.js';
 
 const changeBlocks = (personId, change) => update(blocksKey(personId), () => ({ blocks: [] }), async data => {
   await change(data.blocks);
@@ -37,7 +38,9 @@ export default async (req, context) => handle(async () => {
     if (shown) {
       for (const [key, session] of Object.entries(await loadSessions(personId, shown.num))) progress[key] = sessionSummary(session);
     }
-    return json({ person: personId, blocks, progress });
+    // Your own running block also shows which day each workout is on your schedule, if it's switched on.
+    const planned = shown?.status === 'running' && personId === user.id && user.person.schedule ? planFor(await loadPlan(personId), shown) : {};
+    return json({ person: personId, blocks, progress, planned });
   }
   if (req.method !== 'POST') return fail(405, 'Use GET or POST.');
 
@@ -83,7 +86,7 @@ export default async (req, context) => handle(async () => {
   const id = input.person;
   if (!people[id]) return fail(404, 'That person doesn\'t exist.');
   let message = '';
-  let completedNum = null, reopenedNum = null;
+  let completedNum = null, reopenedNum = null, deletedNum = null;
 
   await changeBlocks(id, async blocks => {
     const running = runningBlock(blocks);
@@ -112,6 +115,7 @@ export default async (req, context) => handle(async () => {
         throw new UserError(409, `Block ${running.num} has training logged, so it can't be deleted.`);
       }
       blocks.splice(blocks.indexOf(target), 1);
+      deletedNum = target.num;
       message = `${target === running ? 'Running' : 'Queued'} Block ${target.num} deleted.`;
     } else if (input.action === 'start') {
       if (!queued) throw new UserError(409, `${name(id)} has no queued block to start.`);
@@ -136,6 +140,7 @@ export default async (req, context) => handle(async () => {
   });
   if (completedNum) await finishInProgress(id, completedNum);
   if (reopenedNum) await undoAutoFinish(id, reopenedNum);
+  if (deletedNum) await forgetBlock(id, deletedNum);
   return json({ message });
 }, context);
 
